@@ -1,27 +1,87 @@
+@import url('https://api.fontshare.com/v2/css?f[]=satoshi@400,500,600,700&f[]=clash-display@400,500,600&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Surfaces */
+  --color-bg: #f7f6f2;
+  --color-surface: #f9f8f5;
+
+  /* Primary — deep forest green */
+  --color-primary: #1a5c3a;
+  --color-primary-hover: #134a2e;
+  --color-primary-highlight: #d0e8da;
+  --color-primary-fg: #ffffff;
+
+  /* Semantic valuation colors */
+  --color-overpriced: #a13544;
+  --color-fair: #437a22;
+  --color-underpriced: #006494;
+
+  /* Text */
+  --color-text: #1a1a18;
+  --color-muted: #f0efe9;
+  --color-muted-fg: #6b6b60;
+
+  /* Border */
+  --color-border: #e2e0d8;
+
+  /* Secondary */
+  --color-secondary: #e8e6e0;
+  --color-secondary-fg: #3a3a35;
+
+  /* Radius */
+  --radius: 0.625rem;
+
+  /* shadcn compat */
+  --background: var(--color-bg);
+  --foreground: var(--color-text);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+.dark {
+  --color-bg: #0f1210;
+  --color-surface: #161a17;
+
+  --color-primary: #3d9e6a;
+  --color-primary-hover: #4db87c;
+  --color-primary-highlight: #1a3528;
+  --color-primary-fg: #ffffff;
+
+  --color-overpriced: #e05c6e;
+  --color-fair: #6fbc3a;
+  --color-underpriced: #4da9d8;
+
+  --color-text: #e8e6e0;
+  --color-muted: #1e2620;
+  --color-muted-fg: #9a9a8e;
+
+  --color-border: #2a2e2b;
+
+  --color-secondary: #1e2620;
+  --color-secondary-fg: #c8c6bc;
+
+  --background: var(--color-bg);
+  --foreground: var(--color-text);
+}
+
+@layer base {
+  * {
+    @apply border-border;
   }
-}
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Satoshi', 'Inter', sans-serif;
+  }
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+  .font-display {
+    font-family: 'Clash Display', 'Inter', sans-serif;
   }
 }
