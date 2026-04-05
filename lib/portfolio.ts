@@ -1,7 +1,10 @@
 "use client";
 
+import { supabase } from "./supabase";
+
 export interface Property {
   id: string;
+  user_id?: string;
   name: string;
   location: string;
   area_type: string;
@@ -14,7 +17,7 @@ export interface Property {
   ownership_type: "self-occupied" | "rented" | "under-construction";
   notes?: string;
   ai_estimated_value_lakhs?: number;
-  created_at: string;
+  created_at?: string;
 }
 
 export interface PortfolioSummary {
@@ -25,52 +28,62 @@ export interface PortfolioSummary {
   count: number;
 }
 
-const STORAGE_KEY = "propiq_portfolio";
+export async function getProperties(): Promise<Property[]> {
+  const { data, error } = await supabase
+    .from("properties")
+    .select("*")
+    .order("created_at", { ascending: false });
 
-export function getProperties(): Property[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    return stored ? JSON.parse(stored) : [];
-  } catch {
+  if (error) {
+    console.error("Error fetching properties:", error);
     return [];
   }
+  return (data ?? []) as Property[];
 }
 
-export function saveProperties(properties: Property[]): void {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(properties));
+export async function addProperty(
+  data: Omit<Property, "id" | "created_at" | "user_id">
+): Promise<Property | null> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return null;
+
+  const { data: inserted, error } = await supabase
+    .from("properties")
+    .insert({ ...data, user_id: user.id })
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Error adding property:", error);
+    return null;
+  }
+  return inserted as Property;
 }
 
-export function addProperty(
-  data: Omit<Property, "id" | "created_at">
-): Property {
-  const property: Property = {
-    ...data,
-    id: `prop-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-    created_at: new Date().toISOString(),
-  };
-  const properties = getProperties();
-  properties.push(property);
-  saveProperties(properties);
-  return property;
-}
-
-export function updateProperty(
+export async function updateProperty(
   id: string,
   updates: Partial<Property>
-): Property | null {
-  const properties = getProperties();
-  const idx = properties.findIndex((p) => p.id === id);
-  if (idx === -1) return null;
-  properties[idx] = { ...properties[idx], ...updates };
-  saveProperties(properties);
-  return properties[idx];
+): Promise<Property | null> {
+  const { data, error } = await supabase
+    .from("properties")
+    .update(updates)
+    .eq("id", id)
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Error updating property:", error);
+    return null;
+  }
+  return data as Property;
 }
 
-export function deleteProperty(id: string): void {
-  const properties = getProperties().filter((p) => p.id !== id);
-  saveProperties(properties);
+export async function deleteProperty(id: string): Promise<void> {
+  const { error } = await supabase.from("properties").delete().eq("id", id);
+  if (error) console.error("Error deleting property:", error);
 }
 
 export function getPortfolioSummary(properties: Property[]): PortfolioSummary {

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import {
   Property,
   getProperties,
@@ -10,36 +11,51 @@ import {
   getPortfolioSummary,
 } from "@/lib/portfolio";
 import { calculateValuation } from "@/lib/valuation";
+import { supabase } from "@/lib/supabase";
 import { PortfolioSummaryBar } from "@/components/portfolio/PortfolioSummaryBar";
 import { PropertyCard } from "@/components/portfolio/PropertyCard";
 import { AddPropertyModal } from "@/components/portfolio/AddPropertyModal";
 import { PropertyDetailDrawer } from "@/components/portfolio/PropertyDetailDrawer";
 import { EmptyState } from "@/components/portfolio/EmptyState";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Plus } from "lucide-react";
 
 export default function PortfolioPage() {
+  const router = useRouter();
   const [properties, setProperties] = useState<Property[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [authed, setAuthed] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingProperty, setEditingProperty] = useState<Property | null>(null);
   const [drawerProperty, setDrawerProperty] = useState<Property | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
-  useEffect(() => {
-    setProperties(getProperties());
+  const loadProperties = useCallback(async () => {
+    const data = await getProperties();
+    setProperties(data);
+    setLoading(false);
   }, []);
 
-  const handleSave = (data: Omit<Property, "id" | "created_at">) => {
-    if (editingProperty) {
-      const updated = updateProperty(editingProperty.id, data);
-      if (updated) {
-        setProperties(getProperties());
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) {
+        router.push("/login");
+        return;
       }
+      setAuthed(true);
+      loadProperties();
+    });
+  }, [loadProperties, router]);
+
+  const handleSave = async (data: Omit<Property, "id" | "created_at" | "user_id">) => {
+    if (editingProperty) {
+      await updateProperty(editingProperty.id, data);
     } else {
-      addProperty(data);
-      setProperties(getProperties());
+      await addProperty(data);
     }
     setEditingProperty(null);
+    await loadProperties();
   };
 
   const handleEdit = (property: Property) => {
@@ -47,14 +63,14 @@ export default function PortfolioPage() {
     setModalOpen(true);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (confirm("Are you sure you want to delete this property?")) {
-      deleteProperty(id);
-      setProperties(getProperties());
+      await deleteProperty(id);
+      await loadProperties();
     }
   };
 
-  const handleRefresh = (property: Property) => {
+  const handleRefresh = async (property: Property) => {
     const valuation = calculateValuation({
       location: property.location,
       area_type: property.area_type,
@@ -63,10 +79,10 @@ export default function PortfolioPage() {
       bathrooms: property.bathrooms,
       balconies: property.balconies,
     });
-    updateProperty(property.id, {
+    await updateProperty(property.id, {
       ai_estimated_value_lakhs: valuation.predicted_price_lakhs,
     });
-    setProperties(getProperties());
+    await loadProperties();
   };
 
   const handleCardClick = (property: Property) => {
@@ -74,11 +90,28 @@ export default function PortfolioPage() {
     setDrawerOpen(true);
   };
 
+  if (!authed || loading) {
+    return (
+      <div className="max-w-content mx-auto px-4 sm:px-6 py-8 space-y-6">
+        <Skeleton className="h-8 w-48" />
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {[...Array(4)].map((_, i) => (
+            <Skeleton key={i} className="h-24 rounded-xl" />
+          ))}
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          {[...Array(3)].map((_, i) => (
+            <Skeleton key={i} className="h-52 rounded-xl" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   const summary = getPortfolioSummary(properties);
 
   return (
     <div className="max-w-content mx-auto px-4 sm:px-6 py-8">
-      {/* Page header */}
       <div className="flex items-center justify-between mb-6">
         <h1 className="font-display text-2xl font-semibold text-foreground">
           My Portfolio
@@ -107,7 +140,6 @@ export default function PortfolioPage() {
       ) : (
         <>
           <PortfolioSummaryBar summary={summary} />
-
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mt-6">
             {properties.map((property) => (
               <PropertyCard
