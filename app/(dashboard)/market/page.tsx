@@ -2,17 +2,43 @@
 
 import { useState } from "react";
 import marketStats from "@/lib/data/market_stats.json";
-import { LocalityRankingTable } from "@/components/market/LocalityRankingTable";
+import { LocalityCardGrid } from "@/components/market/LocalityCardGrid";
 import { PriceDistributionChart } from "@/components/market/PriceDistributionChart";
+import { BudgetExplorer } from "@/components/market/BudgetExplorer";
+import { LocalityDetailPanel } from "@/components/market/LocalityDetailPanel";
+import { AppreciationTrendsChart } from "@/components/market/AppreciationTrendsChart";
+import { RentalYieldTable } from "@/components/market/RentalYieldTable";
 import { formatLakhs, formatPricePerSqft, formatNumber } from "@/lib/utils/format";
 import { TrendingUp, Building2, BarChart2, MapPin } from "lucide-react";
 
-const topLocality = [...marketStats.localities].sort(
+// Deduplicate localities by name (keep first occurrence)
+const uniqueLocalities = marketStats.localities.filter(
+  (l, i, arr) => arr.findIndex((x) => x.name === l.name) === i
+);
+
+const topLocality = [...uniqueLocalities].sort(
   (a, b) => b.avg_price_per_sqft - a.avg_price_per_sqft
 )[0];
 
+type BudgetFilter = { budget: number; bhk: 1 | 2 | 3 } | null;
+type LocalityData = (typeof marketStats.localities)[number];
+
 export default function MarketPage() {
   const [selectedLocality, setSelectedLocality] = useState<string | null>(null);
+  const [detailLocality, setDetailLocality] = useState<LocalityData | null>(null);
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [budgetFilter, setBudgetFilter] = useState<BudgetFilter>(null);
+
+  const handleSelectLocality = (l: LocalityData) => {
+    setSelectedLocality(l.name === selectedLocality ? null : l.name);
+    setDetailLocality(l as LocalityData);
+    setDetailOpen(true);
+  };
+
+  const handleBudgetLocalityClick = (name: string) => {
+    const l = uniqueLocalities.find((x) => x.name === name);
+    if (l) handleSelectLocality(l as LocalityData);
+  };
 
   const summaryCards = [
     {
@@ -68,38 +94,56 @@ export default function MarketPage() {
                 {card.value}
               </p>
               {card.sub && (
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  {card.sub}
-                </p>
+                <p className="text-xs text-muted-foreground mt-0.5">{card.sub}</p>
               )}
             </div>
           );
         })}
       </div>
 
+      {/* Budget Explorer */}
+      <BudgetExplorer
+        localities={uniqueLocalities}
+        onFilterChange={setBudgetFilter}
+        onLocalityClick={handleBudgetLocalityClick}
+      />
+
       {/* Chart */}
       <div className="bg-surface border border-border rounded-xl p-6 shadow-sm">
         <PriceDistributionChart
-          localities={marketStats.localities}
+          localities={uniqueLocalities}
           selectedLocality={selectedLocality}
         />
       </div>
 
-      {/* Table */}
+      {/* Locality card grid */}
       <div className="bg-surface border border-border rounded-xl p-6 shadow-sm">
         <h2 className="font-display font-semibold text-foreground mb-4">
-          Locality Rankings
+          Browse Localities
         </h2>
-        <LocalityRankingTable
-          localities={marketStats.localities}
-          onSelectLocality={(l) =>
-            setSelectedLocality(
-              l.name === selectedLocality ? null : l.name
-            )
-          }
+        <LocalityCardGrid
+          localities={uniqueLocalities}
+          onSelectLocality={(l) => handleSelectLocality(l as LocalityData)}
           selectedLocality={selectedLocality}
+          budgetFilter={budgetFilter}
         />
       </div>
+
+      {/* Appreciation Trends */}
+      <div className="bg-surface border border-border rounded-xl p-6 shadow-sm">
+        <AppreciationTrendsChart />
+      </div>
+
+      {/* Rental Yields */}
+      <div className="bg-surface border border-border rounded-xl p-6 shadow-sm">
+        <RentalYieldTable />
+      </div>
+
+      <LocalityDetailPanel
+        locality={detailLocality}
+        open={detailOpen}
+        onOpenChange={setDetailOpen}
+      />
     </div>
   );
 }

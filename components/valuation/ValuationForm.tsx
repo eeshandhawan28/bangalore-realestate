@@ -29,6 +29,8 @@ export function ValuationForm({ onSubmit, loading }: ValuationFormProps) {
   const [bhk, setBhk] = useState(2);
   const [bathrooms, setBathrooms] = useState(2);
   const [balconies, setBalconies] = useState(1);
+  const [propertyAge, setPropertyAge] = useState("");
+  const [floorNumber, setFloorNumber] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,6 +42,8 @@ export function ValuationForm({ onSubmit, loading }: ValuationFormProps) {
       bhk,
       bathrooms,
       balconies,
+      property_age_years: propertyAge !== "" ? parseInt(propertyAge, 10) : undefined,
+      floor_number: floorNumber !== "" ? parseInt(floorNumber, 10) : undefined,
     });
   };
 
@@ -173,6 +177,44 @@ export function ValuationForm({ onSubmit, loading }: ValuationFormProps) {
             <Plus className="h-4 w-4" />
           </Button>
         </div>
+      </div>
+
+      {/* Property Age (optional) */}
+      <div className="space-y-2">
+        <Label htmlFor="age">
+          Property Age{" "}
+          <span className="text-muted-foreground font-normal">(years, optional)</span>
+        </Label>
+        <Input
+          id="age"
+          type="number"
+          placeholder="e.g. 5"
+          min={0}
+          max={50}
+          value={propertyAge}
+          onChange={(e) => setPropertyAge(e.target.value)}
+        />
+        <p className="text-xs text-muted-foreground">
+          Leave blank if new / under construction
+        </p>
+      </div>
+
+      {/* Floor Number (optional) */}
+      <div className="space-y-2">
+        <Label htmlFor="floor">
+          Floor Number{" "}
+          <span className="text-muted-foreground font-normal">(optional)</span>
+        </Label>
+        <Input
+          id="floor"
+          type="number"
+          placeholder="e.g. 3"
+          min={0}
+          max={60}
+          value={floorNumber}
+          onChange={(e) => setFloorNumber(e.target.value)}
+        />
+        <p className="text-xs text-muted-foreground">0 = Ground floor</p>
       </div>
 
       <Button

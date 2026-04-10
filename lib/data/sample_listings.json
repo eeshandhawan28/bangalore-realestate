@@ -14,7 +14,9 @@
     "description": "Premium corner apartment in a gated community with 24/7 security, clubhouse, and swimming pool. Freshly painted, modular kitchen.",
     "contact_email": "ramesh.k@propiq.demo",
     "contact_phone": "+91-9876543210",
-    "created_at": "2024-11-15"
+    "created_at": "2024-11-15",
+    "lat": 12.9352,
+    "lng": 77.6245
   },
   {
     "id": "lst-002",
@@ -31,7 +33,9 @@
     "description": "Well-maintained 2BHK in a prime Whitefield society. Close to ITPL and metro. Semi-furnished with wardrobes and AC.",
     "contact_email": "priya.s@propiq.demo",
     "contact_phone": "+91-9845678901",
-    "created_at": "2024-11-20"
+    "created_at": "2024-11-20",
+    "lat": 12.9698,
+    "lng": 77.7499
   },
   {
     "id": "lst-003",
@@ -48,7 +52,9 @@
     "description": "Urgent sale due to relocation. Below market price. 3BHK on 3rd floor, east-facing, excellent ventilation. OC and Khata available.",
     "contact_email": "anand.v@propiq.demo",
     "contact_phone": "+91-9731234567",
-    "created_at": "2024-11-18"
+    "created_at": "2024-11-18",
+    "lat": 12.9116,
+    "lng": 77.6474
   },
   {
     "id": "lst-004",
@@ -66,7 +72,9 @@
     "description": "Fully furnished 2BHK in the heart of Indiranagar. All appliances included. Walking distance to 100 Feet Road restaurants and shops.",
     "contact_email": "deepa.r@propiq.demo",
     "contact_phone": "+91-9902345678",
-    "created_at": "2024-11-22"
+    "created_at": "2024-11-22",
+    "lat": 12.9784,
+    "lng": 77.6408
   },
   {
     "id": "lst-005",
@@ -83,7 +91,9 @@
     "description": "Compact 1BHK perfect for IT professionals. Close to Infosys and Wipro campuses. Society with gym and 24/7 security.",
     "contact_email": "suresh.m@propiq.demo",
     "contact_phone": "+91-9886543210",
-    "created_at": "2024-11-10"
+    "created_at": "2024-11-10",
+    "lat": 12.8399,
+    "lng": 77.677
   },
   {
     "id": "lst-006",
@@ -100,7 +110,9 @@
     "description": "Exclusive penthouse on the 14th floor with panoramic city views. Private terrace, premium fittings, smart home automation. Ready to move.",
     "contact_email": "vikram.n@propiq.demo",
     "contact_phone": "+91-9845123456",
-    "created_at": "2024-11-05"
+    "created_at": "2024-11-05",
+    "lat": 12.9074,
+    "lng": 77.5937
   },
   {
     "id": "lst-007",
@@ -118,7 +130,9 @@
     "description": "Independent villa with private garden, covered parking for 2 cars, and solar water heater. Pet-friendly society.",
     "contact_email": "kavitha.g@propiq.demo",
     "contact_phone": "+91-9731987654",
-    "created_at": "2024-11-25"
+    "created_at": "2024-11-25",
+    "lat": 12.901,
+    "lng": 77.684
   },
   {
     "id": "lst-008",
@@ -135,6 +149,8 @@
     "description": "Ready to move 2BHK in a well-established society. Vastu-compliant, north-east facing. Children's play area and power backup.",
     "contact_email": "mahesh.b@propiq.demo",
     "contact_phone": "+91-9902876543",
-    "created_at": "2024-11-12"
+    "created_at": "2024-11-12",
+    "lat": 12.8828,
+    "lng": 77.599
   }
 ]

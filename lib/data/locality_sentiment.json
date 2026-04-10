@@ -1,0 +1,452 @@
+{
+  "Whitefield": {
+    "sentiment_score": 0.10,
+    "trend": "up",
+    "highlights": [
+      "Namma Metro Green Line Phase 2 fully operational through ITPL",
+      "EPIP Zone attracting major global MNC expansions",
+      "Rapid F&B, co-working, and retail hub growth on Whitefield Main Road"
+    ]
+  },
+  "Electronic City": {
+    "sentiment_score": 0.07,
+    "trend": "up",
+    "highlights": [
+      "Hosur Road elevated expressway cutting commute times significantly",
+      "Infosys and Wipro campus expansion drives steady rental demand",
+      "Phase 1 & 2 social infrastructure (schools, hospitals) maturing"
+    ]
+  },
+  "Koramangala": {
+    "sentiment_score": 0.11,
+    "trend": "up",
+    "highlights": [
+      "India's densest startup ecosystem — unicorn HQs drive premium demand",
+      "5th & 6th Block F&B and entertainment boom pushes lifestyle premium",
+      "Consistent top-3 most searched locality in Bangalore"
+    ]
+  },
+  "Indiranagar": {
+    "sentiment_score": 0.10,
+    "trend": "up",
+    "highlights": [
+      "Indiranagar Metro Station (Purple Line) boosts connectivity",
+      "100 Feet Road restaurant and nightlife expansion — highest footfall micro-market",
+      "Premium residential demand from tech professionals driving price appreciation"
+    ]
+  },
+  "HSR Layout": {
+    "sentiment_score": 0.09,
+    "trend": "up",
+    "highlights": [
+      "Growing startup and VC cluster — multiple unicorn offices in HSR",
+      "Agara Lake rejuvenation project improving green infrastructure",
+      "Strong social amenities: schools, hospitals, parks all within walkable distance"
+    ]
+  },
+  "Sarjapur Road": {
+    "sentiment_score": 0.09,
+    "trend": "up",
+    "highlights": [
+      "SAP Labs, Oracle, Wipro and multiple Fortune 500 campuses drive demand",
+      "Peripheral Ring Road project under construction — will ease ORR congestion",
+      "New gated community supply matched by strong absorption from IT workforce"
+    ]
+  },
+  "Marathahalli": {
+    "sentiment_score": 0.06,
+    "trend": "up",
+    "highlights": [
+      "Central ORR location with direct access to 10+ major IT campuses",
+      "Metro Phase 3 Pink Line planned through Marathahalli corridor",
+      "Strong rental market driven by IT professionals from nearby offices"
+    ]
+  },
+  "BTM Layout": {
+    "sentiment_score": 0.05,
+    "trend": "stable",
+    "highlights": [
+      "Purple Line Metro connectivity improving last-mile access",
+      "Growing café culture and co-working spaces along 4th Main",
+      "Proximity to Silk Board junction undergoing flyover upgrade"
+    ]
+  },
+  "Jayanagar": {
+    "sentiment_score": 0.05,
+    "trend": "stable",
+    "highlights": [
+      "Heritage locality with Metro connectivity on Green Line",
+      "JP Nagar-Jayanagar corridor benefiting from South Bangalore infrastructure push",
+      "Stable demand from established families — low supply adds scarcity premium"
+    ]
+  },
+  "Bannerghatta Road": {
+    "sentiment_score": 0.04,
+    "trend": "stable",
+    "highlights": [
+      "Outer Ring Road extension improving north-south corridor connectivity",
+      "Growing mid-income segment supply from established developers",
+      "Proximity to JP Nagar and Jayanagar supports steady appreciation"
+    ]
+  },
+  "Hebbal": {
+    "sentiment_score": 0.09,
+    "trend": "up",
+    "highlights": [
+      "Manyata Embassy Business Park — one of Bangalore's largest tech parks adjacent",
+      "Hebbal flyover and NH-44 connection provides direct airport access",
+      "Significant commercial development pushing residential demand northward"
+    ]
+  },
+  "Yelahanka": {
+    "sentiment_score": 0.07,
+    "trend": "up",
+    "highlights": [
+      "8 km from Kempegowda International Airport — appreciating on aerospace corridor",
+      "DRDO and HAL presence adding stable government employment base",
+      "New Bangalore North township projects attracting first-time buyers"
+    ]
+  },
+  "Devanahalli": {
+    "sentiment_score": 0.12,
+    "trend": "up",
+    "highlights": [
+      "Adjacent to BIAL — Bangalore's international airport expansion in full swing",
+      "Proposed IT Investment Region (ITIR) and Aerospace SEZ approved",
+      "Land prices doubling in 5 years — highest appreciation zone in Bangalore periphery"
+    ]
+  },
+  "JP Nagar": {
+    "sentiment_score": 0.05,
+    "trend": "stable",
+    "highlights": [
+      "Metro connectivity and strong social infrastructure keep demand steady",
+      "JP Nagar Phase 6-8 seeing new supply absorption from IT workforce",
+      "Well-established residential corridor with stable long-term appreciation"
+    ]
+  },
+  "Bellandur": {
+    "sentiment_score": 0.04,
+    "trend": "stable",
+    "highlights": [
+      "ORR tech corridor with Accenture, Cisco, and Goldman Sachs offices nearby",
+      "Bellandur Lake rejuvenation project underway — long-standing environmental concern",
+      "Premium projects commanding significant premiums over ORR average"
+    ]
+  },
+  "Domlur": {
+    "sentiment_score": 0.08,
+    "trend": "up",
+    "highlights": [
+      "Embassy Tech Village and Prestige Tech Park anchor commercial demand",
+      "MG Road and Indiranagar Metro stations within 10-minute reach",
+      "Limited new supply in tight micro-market supports premium pricing"
+    ]
+  },
+  "Old Airport Road": {
+    "sentiment_score": 0.06,
+    "trend": "up",
+    "highlights": [
+      "HAL-Indiranagar corridor seeing rapid commercial-to-premium residential conversion",
+      "Proximity to Domlur and Indiranagar tech hubs drives aspiration demand",
+      "Major redevelopment projects replacing older housing stock"
+    ]
+  },
+  "Rajajinagar": {
+    "sentiment_score": 0.05,
+    "trend": "stable",
+    "highlights": [
+      "Purple Line Metro stations improve CBD connectivity significantly",
+      "Established West Bangalore premium micro-market with strong family demand",
+      "Mall of Asia and upcoming retail developments adding lifestyle amenities"
+    ]
+  },
+  "Malleshwaram": {
+    "sentiment_score": 0.04,
+    "trend": "stable",
+    "highlights": [
+      "Heritage locality with Metro Station and strong civic infrastructure",
+      "Scarcity of new supply in established layout supports long-term value",
+      "Premium demand from Kannadigas and established families — low churn"
+    ]
+  },
+  "RT Nagar": {
+    "sentiment_score": 0.03,
+    "trend": "stable",
+    "highlights": [
+      "Improving connectivity via Hebbal junction upgrades",
+      "Mid-segment demand growing with proximity to Manyata Tech Park",
+      "Affordable entry point for Bangalore north buyers"
+    ]
+  },
+  "Ulsoor": {
+    "sentiment_score": 0.05,
+    "trend": "stable",
+    "highlights": [
+      "Central Bangalore location with lake proximity commands lifestyle premium",
+      "MG Road and Trinity Metro Stations within short distance",
+      "Heritage bungalow conversions driving boutique luxury segment"
+    ]
+  },
+  "Vijayanagar": {
+    "sentiment_score": 0.03,
+    "trend": "stable",
+    "highlights": [
+      "Metro (Green Line) connectivity improving West Bangalore appeal",
+      "Strong demand from local professionals in the BDA layout",
+      "Stable mid-income residential market with consistent price growth"
+    ]
+  },
+  "Basavanagudi": {
+    "sentiment_score": 0.04,
+    "trend": "stable",
+    "highlights": [
+      "Iconic heritage locality — scarcity premium from limited new supply",
+      "Bull Temple Road corridor attracting boutique restaurants and cafés",
+      "Strong demand from established Bangalore families and expats"
+    ]
+  },
+  "Wilson Garden": {
+    "sentiment_score": 0.03,
+    "trend": "stable",
+    "highlights": [
+      "Central South Bangalore location proximate to Lalbagh and BTM",
+      "Improving social infrastructure supporting mid-premium demand",
+      "Steady appreciation driven by Koramangala and Indiranagar spillover"
+    ]
+  },
+  "KR Puram": {
+    "sentiment_score": 0.05,
+    "trend": "up",
+    "highlights": [
+      "Metro Phase 2 station operational — significantly improved eastern connectivity",
+      "Proximity to Whitefield and ITPL makes this an affordable alternative corridor",
+      "Strong rental demand from IT professionals seeking metro-accessible housing"
+    ]
+  },
+  "Hoskote": {
+    "sentiment_score": 0.04,
+    "trend": "stable",
+    "highlights": [
+      "Peripheral Industrial Area growing with manufacturing units",
+      "Whitefield overspill demand driving peripheral residential projects",
+      "Affordable plotting schemes attracting long-term investment buyers"
+    ]
+  },
+  "Banashankari": {
+    "sentiment_score": 0.04,
+    "trend": "stable",
+    "highlights": [
+      "Established South Bangalore locality with strong civic infrastructure",
+      "Metro connectivity (Green Line) boosting mid-premium demand",
+      "Consistent demand from families — well-regarded school belt"
+    ]
+  },
+  "Chamrajpet": {
+    "sentiment_score": 0.03,
+    "trend": "stable",
+    "highlights": [
+      "Central location near Majestic Metro hub with improving connectivity",
+      "Commercial-to-residential conversion trend in older buildings",
+      "Stable demand from city-centre professionals and traders"
+    ]
+  },
+  "Dasarahalli": {
+    "sentiment_score": 0.02,
+    "trend": "stable",
+    "highlights": [
+      "Improving peripheral connectivity via Tumkur Road upgrades",
+      "Affordable segment attracting first-time buyers from North Bangalore",
+      "BBMP ward development projects improving basic civic amenities"
+    ]
+  },
+  "Hennur Road": {
+    "sentiment_score": 0.09,
+    "trend": "up",
+    "highlights": [
+      "One of Bangalore's fastest-growing corridors — 4+ major IT campuses in catchment",
+      "Metro Phase 3 planning includes Hennur Road alignment",
+      "Significant premium project launches from Prestige, Sobha, and Brigade"
+    ]
+  },
+  "Horamavu": {
+    "sentiment_score": 0.05,
+    "trend": "up",
+    "highlights": [
+      "Proximity to Manyata Tech Park driving IT professional demand",
+      "Improving road infrastructure connecting BRTS and ORR",
+      "Affordable 2BHK supply attracting young professionals from Hebbal corridor"
+    ]
+  },
+  "Kadugodi": {
+    "sentiment_score": 0.06,
+    "trend": "up",
+    "highlights": [
+      "Metro Green Line terminus proximity boosting east Bangalore connectivity",
+      "Overflow demand from Whitefield making Kadugodi an emerging value pick",
+      "New gated community launches at 15-20% discount to Whitefield prices"
+    ]
+  },
+  "Kanakpura Road": {
+    "sentiment_score": 0.05,
+    "trend": "up",
+    "highlights": [
+      "Metro Yellow Line (RV Road to Bommasandra) under active construction",
+      "Affordable south Bangalore corridor attracting plotted development",
+      "Improving infrastructure under BBMP Smart City project for Jayanagar extension"
+    ]
+  },
+  "Mahadevpura": {
+    "sentiment_score": 0.08,
+    "trend": "up",
+    "highlights": [
+      "Located at intersection of ORR and Whitefield corridors — high IT workforce demand",
+      "Rapid apartment supply absorption by Wipro, Mphasis, Cognizant employees",
+      "Metro connectivity via Baiyappanahalli line improving daily commutes"
+    ]
+  },
+  "Nagarbhavi": {
+    "sentiment_score": 0.04,
+    "trend": "stable",
+    "highlights": [
+      "Metro extension (Green Line) to NICE Road junction planned",
+      "Affordable mid-income segment with strong demand from educational institutions",
+      "IIIT Bangalore and other institutions driving steady rental market"
+    ]
+  },
+  "Ramamurthy Nagar": {
+    "sentiment_score": 0.03,
+    "trend": "stable",
+    "highlights": [
+      "Improving east Bangalore infrastructure via NH-44 widening",
+      "Affordable entry point for buyers priced out of Whitefield",
+      "Growing social infrastructure: schools and hospitals opening"
+    ]
+  },
+  "Thanisandra": {
+    "sentiment_score": 0.06,
+    "trend": "up",
+    "highlights": [
+      "Manyata Tech Park proximity driving strong rental and purchase demand",
+      "Namma Metro Phase 3 North extension planned through Thanisandra Main Road",
+      "Premium project launches from Godrej, Prestige attracting upgrade buyers"
+    ]
+  },
+  "Uttarahalli": {
+    "sentiment_score": 0.03,
+    "trend": "stable",
+    "highlights": [
+      "South Bangalore affordable corridor with improving connectivity",
+      "Metro Phase 3 Yellow Line under construction nearby",
+      "Mid-income demand stable — strong rental yields for 2BHK segment"
+    ]
+  },
+  "Varthur": {
+    "sentiment_score": 0.05,
+    "trend": "up",
+    "highlights": [
+      "Sarjapur Road and Whitefield corridors converge here — strong IT demand",
+      "Varthur Lake desilting and rejuvenation improving neighbourhood sentiment",
+      "Affordable alternative to Whitefield with improving infrastructure"
+    ]
+  },
+  "Yeshwanthpur": {
+    "sentiment_score": 0.06,
+    "trend": "up",
+    "highlights": [
+      "Yeshwanthpur Metro Station (Green Line) with KSRTC bus terminus — top connectivity",
+      "Proposed commercial development around Metro Hub increasing property appeal",
+      "Close to CBD and NICE Road — limited supply in premium BDA layout"
+    ]
+  },
+  "Electronic City Phase II": {
+    "sentiment_score": 0.06,
+    "trend": "up",
+    "highlights": [
+      "Phase 2 IT park expansion adding 20,000+ new jobs annually",
+      "Hosur Road signal-free corridor reducing commute to City centre",
+      "More affordable than Phase 1 with equivalent IT campus proximity"
+    ]
+  },
+  "Sarjapur": {
+    "sentiment_score": 0.07,
+    "trend": "up",
+    "highlights": [
+      "Emerging plotted development hotspot on Sarjapur Road extension",
+      "Peripheral Ring Road (PRR) alignment expected to run through Sarjapur",
+      "Affordable land parcels attracting large township developments"
+    ]
+  },
+  "Panathur": {
+    "sentiment_score": 0.06,
+    "trend": "up",
+    "highlights": [
+      "Bellandur-Panathur ORR corridor hosts major IT companies within 2 km",
+      "Metro Phase 3 Green Line extension via Bellandur planned",
+      "Supply of mid-premium 2 and 3BHK well absorbed by tech professionals"
+    ]
+  },
+  "Haralur Road": {
+    "sentiment_score": 0.06,
+    "trend": "up",
+    "highlights": [
+      "HSR-Sarjapur junction — dual corridor advantage for IT workforce",
+      "Growing premium residential supply from branded developers",
+      "Strong demand from HSR Layout and BTM spillover buyers"
+    ]
+  },
+  "Frazer Town": {
+    "sentiment_score": 0.05,
+    "trend": "stable",
+    "highlights": [
+      "Premium central Bangalore micro-market with heritage character",
+      "Good metro connectivity via Indiranagar and MG Road stations",
+      "Steady demand from HNI segment and NRI buyers for premium apartments"
+    ]
+  },
+  "Banaswadi": {
+    "sentiment_score": 0.04,
+    "trend": "stable",
+    "highlights": [
+      "Proximity to Indiranagar and Hennur Road tech corridors",
+      "Improving social infrastructure with new malls and schools",
+      "Affordable 2BHK demand strong from IT professionals"
+    ]
+  },
+  "Peenya": {
+    "sentiment_score": 0.03,
+    "trend": "stable",
+    "highlights": [
+      "Peenya Industrial Area anchors stable employment demand",
+      "Metro connectivity (Green Line) improving residential appeal",
+      "Affordable entry price with metro access — value investment pick"
+    ]
+  },
+  "Bommanahalli": {
+    "sentiment_score": 0.04,
+    "trend": "stable",
+    "highlights": [
+      "ORR proximity with access to Bellandur and Electronic City corridors",
+      "Growing mid-income supply meeting demand from dual-income tech households",
+      "Silk Board flyover upgrade easing the notorious junction congestion"
+    ]
+  },
+  "Kengeri": {
+    "sentiment_score": 0.07,
+    "trend": "up",
+    "highlights": [
+      "Kengeri is the Metro Purple Line terminal — strong transit-oriented development",
+      "Metro connectivity transforming perception of far-west Bangalore",
+      "Affordable plots and apartments attracting long-horizon investors"
+    ]
+  },
+  "Hoodi": {
+    "sentiment_score": 0.06,
+    "trend": "up",
+    "highlights": [
+      "Between Whitefield and KR Puram — dual tech corridor advantage",
+      "Metro Phase 2 connectivity improving east Bangalore commutes",
+      "New gated community supply from mid-market developers well absorbed"
+    ]
+  }
+}

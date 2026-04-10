@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
+import dynamic from "next/dynamic";
 import "./globals.css";
 import { ThemeProvider } from "@/components/shared/ThemeProvider";
 import { Sidebar } from "@/components/shared/Sidebar";
 import { BottomNav } from "@/components/shared/BottomNav";
+
+const ChatBubble = dynamic(() => import("@/components/chat/ChatBubble"), { ssr: false });
 
 export const metadata: Metadata = {
   title: "PropIQ - Bangalore Real Estate Intelligence",
@@ -26,6 +29,7 @@ export default function RootLayout({
             </main>
           </div>
           <BottomNav />
+          <ChatBubble />
         </ThemeProvider>
       </body>
     </html>

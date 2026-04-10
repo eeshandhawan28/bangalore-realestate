@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import sampleListings from "@/lib/data/sample_listings.json";
 import { ListingCard } from "@/components/marketplace/ListingCard";
+import { ListingMap } from "@/components/marketplace/ListingMap";
 import { ListingFilters, FilterState } from "@/components/marketplace/ListingFilters";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,7 +13,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { SlidersHorizontal, Plus } from "lucide-react";
+import { SlidersHorizontal, Plus, Map, LayoutGrid } from "lucide-react";
 import Link from "next/link";
 
 type Listing = (typeof sampleListings)[0];
@@ -23,6 +24,7 @@ export default function MarketplacePage() {
     bhk: [],
     sortBy: "newest",
   });
+  const [view, setView] = useState<"grid" | "map">("map");
 
   const filtered = useMemo(() => {
     let result: Listing[] = [...sampleListings];
@@ -92,6 +94,32 @@ export default function MarketplacePage() {
           </p>
         </div>
         <div className="flex gap-2">
+          {/* View toggle */}
+          <div className="flex border border-border rounded-lg overflow-hidden">
+            <button
+              onClick={() => setView("map")}
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors ${
+                view === "map"
+                  ? "bg-primary text-white"
+                  : "bg-surface text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <Map className="w-3.5 h-3.5" />
+              Map
+            </button>
+            <button
+              onClick={() => setView("grid")}
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors ${
+                view === "grid"
+                  ? "bg-primary text-white"
+                  : "bg-surface text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <LayoutGrid className="w-3.5 h-3.5" />
+              Grid
+            </button>
+          </div>
+
           {/* Mobile filter trigger */}
           <Sheet>
             <SheetTrigger asChild>
@@ -131,9 +159,13 @@ export default function MarketplacePage() {
           </div>
         </aside>
 
-        {/* Listings grid */}
+        {/* Main content */}
         <div className="flex-1">
-          {filtered.length === 0 ? (
+          {view === "map" ? (
+            <div style={{ height: "calc(100vh - 220px)", minHeight: "500px" }}>
+              <ListingMap listings={filtered as Parameters<typeof ListingMap>[0]["listings"]} />
+            </div>
+          ) : filtered.length === 0 ? (
             <div className="text-center py-16">
               <p className="text-muted-foreground">
                 No listings match your filters.

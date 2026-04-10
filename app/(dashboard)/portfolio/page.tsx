@@ -13,6 +13,9 @@ import {
 import { calculateValuation } from "@/lib/valuation";
 import { supabase } from "@/lib/supabase";
 import { PortfolioSummaryBar } from "@/components/portfolio/PortfolioSummaryBar";
+import { PortfolioMetricsRow } from "@/components/portfolio/PortfolioMetricsRow";
+import { PortfolioInsights } from "@/components/portfolio/PortfolioInsights";
+import { PortfolioCharts } from "@/components/portfolio/PortfolioCharts";
 import { PropertyCard } from "@/components/portfolio/PropertyCard";
 import { AddPropertyModal } from "@/components/portfolio/AddPropertyModal";
 import { PropertyDetailDrawer } from "@/components/portfolio/PropertyDetailDrawer";
@@ -140,16 +143,24 @@ export default function PortfolioPage() {
       ) : (
         <>
           <PortfolioSummaryBar summary={summary} />
+          <PortfolioMetricsRow properties={properties} />
+          <PortfolioInsights properties={properties} />
+          <PortfolioCharts properties={properties} />
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mt-6">
-            {properties.map((property) => (
-              <PropertyCard
+            {properties.map((property, index) => (
+              <div
                 key={property.id}
-                property={property}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
-                onRefresh={handleRefresh}
-                onClick={handleCardClick}
-              />
+                className="animate-fade-in-up"
+                style={{ animationDelay: `${index * 80}ms` }}
+              >
+                <PropertyCard
+                  property={property}
+                  onEdit={handleEdit}
+                  onDelete={handleDelete}
+                  onRefresh={handleRefresh}
+                  onClick={handleCardClick}
+                />
+              </div>
             ))}
           </div>
         </>

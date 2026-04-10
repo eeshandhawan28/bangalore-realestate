@@ -1,26 +1,75 @@
 "use client";
 
-import { ValuationResult as VResult } from "@/lib/valuation";
+import { useState, useEffect } from "react";
+import { ValuationResult as VResult, LocalitySentiment } from "@/lib/valuation";
 import { formatLakhs, formatLakhsShort, formatPricePerSqft } from "@/lib/utils/format";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { ChevronDown, ChevronUp, TrendingUp, TrendingDown, Minus as TrendingFlat, MapPin } from "lucide-react";
 
 interface ValuationResultProps {
   result: VResult;
 }
 
+function adjustmentLabel(key: string): string {
+  const labels: Record<string, string> = {
+    sqft: "Size vs typical",
+    area_type: "Area type",
+    bathrooms: "Extra bathrooms",
+    balconies: "Balconies",
+    age: "Property age",
+    floor: "Floor level",
+    sentiment: "Local development sentiment",
+  };
+  return labels[key] ?? key;
+}
+
 export function ValuationResult({ result }: ValuationResultProps) {
+  const [showBreakdown, setShowBreakdown] = useState(false);
+  const [liveSentiment, setLiveSentiment] = useState<
+    (LocalitySentiment & { updated_at: string | null; source: string }) | null
+  >(null);
+
+  // Fetch live sentiment from API after initial render
+  useEffect(() => {
+    const locality = result.locality_name;
+    if (!locality) return;
+    fetch(`/api/sentiment/${encodeURIComponent(locality)}`)
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => {
+        if (data && !data.error) {
+          setLiveSentiment({
+            score: data.sentiment_score,
+            trend: data.trend,
+            impact_pct: Math.round(data.sentiment_score * 100 * 10) / 10,
+            highlights: data.highlights,
+            updated_at: data.updated_at,
+            source: data.source,
+          });
+        }
+      })
+      .catch(() => {/* silently use props fallback */});
+  }, [result.locality_name]);
+
   const {
     predicted_price_lakhs,
     lower_bound,
     upper_bound,
+    confidence_half_width_pct,
     price_per_sqft,
     locality_avg_price_per_sqft,
     locality_name,
     locality_min_price_per_sqft,
     locality_max_price_per_sqft,
     comparable_properties,
+    price_adjustments,
+    locality_sentiment,
   } = result;
+
+  const confidencePct = Math.round(confidence_half_width_pct * 100);
+
+  // Prefer live (Supabase) sentiment over static JSON, with graceful fallback
+  const activeSentiment = liveSentiment ?? locality_sentiment;
 
   // Position of estimated price on the min-max scale (0-100%)
   const markerPosition = Math.min(
@@ -31,6 +80,10 @@ export function ValuationResult({ result }: ValuationResultProps) {
         (locality_max_price_per_sqft - locality_min_price_per_sqft)) *
         100
     )
+  );
+
+  const adjustmentEntries = Object.entries(price_adjustments).filter(
+    ([, v]) => v !== 0
   );
 
   return (
@@ -45,6 +98,9 @@ export function ValuationResult({ result }: ValuationResultProps) {
           Range:{" "}
           <span className="text-foreground font-medium">
             {formatLakhsShort(lower_bound)} – {formatLakhsShort(upper_bound)}
+          </span>
+          <span className="text-xs text-muted-foreground ml-1.5">
+            (±{confidencePct}% based on locality spread)
           </span>
         </p>
 
@@ -89,6 +145,110 @@ export function ValuationResult({ result }: ValuationResultProps) {
           <span>₹{locality_max_price_per_sqft.toLocaleString("en-IN")}</span>
         </div>
       </div>
+
+      {/* Locality Sentiment Intelligence */}
+      {activeSentiment && (
+        <div className="border border-border rounded-xl overflow-hidden">
+          <div className="px-4 py-3 flex items-center justify-between border-b border-border bg-muted/30">
+            <div className="flex items-center gap-2">
+              <MapPin className="w-4 h-4 text-primary" />
+              <span className="text-sm font-medium text-foreground">
+                Local Development Intelligence
+              </span>
+              {liveSentiment?.updated_at && (
+                <span className="text-xs text-muted-foreground">
+                  · updated{" "}
+                  {new Date(liveSentiment.updated_at).toLocaleDateString(
+                    "en-IN",
+                    { day: "numeric", month: "short" }
+                  )}
+                </span>
+              )}
+              {liveSentiment?.source === "static" && (
+                <span className="text-xs text-muted-foreground">· baseline data</span>
+              )}
+            </div>
+            <div className="flex items-center gap-1.5">
+              {activeSentiment.trend === "up" ? (
+                <TrendingUp className="w-4 h-4 text-green-500" />
+              ) : activeSentiment.trend === "down" ? (
+                <TrendingDown className="w-4 h-4 text-red-400" />
+              ) : (
+                <TrendingFlat className="w-4 h-4 text-muted-foreground" />
+              )}
+              <span
+                className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                  activeSentiment.trend === "up"
+                    ? "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400"
+                    : activeSentiment.trend === "down"
+                    ? "bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400"
+                    : "bg-muted text-muted-foreground"
+                }`}
+              >
+                {activeSentiment.impact_pct > 0 ? "+" : ""}
+                {activeSentiment.impact_pct}% sentiment impact
+              </span>
+            </div>
+          </div>
+          <ul className="px-4 py-3 space-y-2">
+            {activeSentiment.highlights.map((h, i) => (
+              <li key={i} className="flex items-start gap-2 text-xs text-muted-foreground">
+                <span className="mt-1 w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0" />
+                {h}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* How was this estimated — collapsible breakdown */}
+      {adjustmentEntries.length > 0 && (
+        <div className="border border-border rounded-xl overflow-hidden">
+          <button
+            type="button"
+            onClick={() => setShowBreakdown((p) => !p)}
+            className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-foreground hover:bg-muted/50 transition-colors"
+          >
+            <span>How was this estimated?</span>
+            {showBreakdown ? (
+              <ChevronUp className="w-4 h-4 text-muted-foreground" />
+            ) : (
+              <ChevronDown className="w-4 h-4 text-muted-foreground" />
+            )}
+          </button>
+          {showBreakdown && (
+            <div className="px-4 pb-4 space-y-2 border-t border-border pt-3">
+              <p className="text-xs text-muted-foreground mb-3">
+                Starting from the {locality_name} median price, these factors
+                were applied:
+              </p>
+              {adjustmentEntries.map(([key, value]) => {
+                const isPositive = value > 0;
+                return (
+                  <div
+                    key={key}
+                    className="flex items-center justify-between text-sm"
+                  >
+                    <span className="text-muted-foreground">
+                      {adjustmentLabel(key)}
+                    </span>
+                    <span
+                      className={
+                        isPositive
+                          ? "text-green-600 dark:text-green-400 font-medium"
+                          : "text-red-500 dark:text-red-400 font-medium"
+                      }
+                    >
+                      {isPositive ? "+" : ""}
+                      {value}%
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Comparables */}
       {comparable_properties.length > 0 && (

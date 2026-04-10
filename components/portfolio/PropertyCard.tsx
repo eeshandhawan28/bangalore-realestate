@@ -12,6 +12,37 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, Pencil, Trash2, RefreshCw, MapPin } from "lucide-react";
 import { formatLakhs } from "@/lib/utils/format";
+import marketStats from "@/lib/data/market_stats.json";
+
+function holdingPeriod(purchaseDate: string): string {
+  const start = new Date(purchaseDate);
+  const now = new Date();
+  const months =
+    (now.getFullYear() - start.getFullYear()) * 12 +
+    (now.getMonth() - start.getMonth());
+  if (months < 12) return `${months}m`;
+  const y = Math.floor(months / 12);
+  const m = months % 12;
+  return m === 0 ? `${y}y` : `${y}y ${m}m`;
+}
+
+function marketContext(
+  purchasePriceLakhs: number,
+  totalSqft: number,
+  location: string
+): { label: string; color: string } | null {
+  const loc = marketStats.localities.find(
+    (l) => l.name.toLowerCase() === location.toLowerCase()
+  );
+  if (!loc) return null;
+  const buyPricePerSqft = (purchasePriceLakhs * 100000) / totalSqft;
+  const diff = ((buyPricePerSqft - loc.avg_price_per_sqft) / loc.avg_price_per_sqft) * 100;
+  if (diff < -5)
+    return { label: `${Math.abs(diff).toFixed(0)}% below locality avg`, color: "text-[#437a22] dark:text-[#6fbc3a]" };
+  if (diff > 5)
+    return { label: `${diff.toFixed(0)}% above locality avg`, color: "text-[#92400e] dark:text-[#fbbf24]" };
+  return { label: "At locality avg", color: "text-muted-foreground" };
+}
 
 interface PropertyCardProps {
   property: Property;
@@ -42,10 +73,13 @@ export function PropertyCard({
       ? (gain / property.purchase_price_lakhs) * 100
       : 0;
   const isPositive = gain >= 0;
+  const held = holdingPeriod(property.purchase_date);
+  const mktCtx = marketContext(property.purchase_price_lakhs, property.total_sqft, property.location);
+  const buyPsf = Math.round((property.purchase_price_lakhs * 100000) / property.total_sqft);
 
   return (
     <Card
-      className="bg-surface border-border shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+      className="bg-surface border-border shadow-sm cursor-pointer transition-all duration-200 ease-out hover:shadow-md hover:-translate-y-1 hover:border-primary/20"
       onClick={() => onClick(property)}
     >
       <CardContent className="p-5">
@@ -116,6 +150,9 @@ export function PropertyCard({
           >
             {property.ownership_type.replace("-", " ")}
           </span>
+          <span className="text-xs bg-muted text-muted-foreground px-2 py-1 rounded-md">
+            {held}
+          </span>
         </div>
 
         {/* Price comparison */}
@@ -134,8 +171,8 @@ export function PropertyCard({
           </div>
         </div>
 
-        {/* Gain/Loss */}
-        <div className="mt-3 pt-3 border-t border-border">
+        {/* Gain/Loss + Market Context */}
+        <div className="mt-3 pt-3 border-t border-border space-y-1.5">
           <Badge
             className={`text-xs font-semibold ${
               isPositive
@@ -147,6 +184,10 @@ export function PropertyCard({
             {formatLakhs(gain)} ({isPositive ? "+" : ""}
             {gainPercent.toFixed(1)}%)
           </Badge>
+          <p className={`text-xs ${mktCtx?.color ?? "text-muted-foreground"}`}>
+            ₹{buyPsf.toLocaleString("en-IN")}/sqft
+            {mktCtx ? ` · ${mktCtx.label}` : ""}
+          </p>
         </div>
       </CardContent>
     </Card>

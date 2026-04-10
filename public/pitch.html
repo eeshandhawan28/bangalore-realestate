@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PropIQ — Pitch Deck</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0d0d0d;
+      color: #f0ede8;
+      line-height: 1.6;
+    }
+
+    /* Slide container */
+    .slide {
+      min-height: 100vh;
+      padding: 64px 80px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      border-bottom: 1px solid #1e1e1e;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    /* Typography */
+    .label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #1a5c3a;
+      margin-bottom: 12px;
+    }
+    h1 { font-size: 56px; font-weight: 700; line-height: 1.1; letter-spacing: -1px; }
+    h2 { font-size: 36px; font-weight: 700; letter-spacing: -0.5px; }
+    h3 { font-size: 20px; font-weight: 600; }
+    p  { color: #a0998f; font-size: 17px; }
+
+    .accent { color: #1a5c3a; }
+    .muted  { color: #5a5550; font-size: 14px; }
+
+    /* Hero slide */
+    .hero-logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 48px;
+    }
+    .logo-icon {
+      width: 48px; height: 48px;
+      background: #1a5c3a;
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .logo-icon svg { width: 26px; height: 26px; color: #fff; }
+    .logo-text { font-size: 26px; font-weight: 700; color: #f0ede8; }
+
+    .hero-tagline {
+      font-size: 18px;
+      color: #a0998f;
+      margin-top: 20px;
+      max-width: 600px;
+    }
+    .hero-badge {
+      display: inline-block;
+      background: #1a5c3a22;
+      border: 1px solid #1a5c3a55;
+      color: #4caf82;
+      border-radius: 999px;
+      padding: 4px 14px;
+      font-size: 13px;
+      font-weight: 500;
+      margin-top: 32px;
+    }
+
+    /* Problem / stat blocks */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      margin-top: 40px;
+    }
+    .stat-card {
+      background: #141414;
+      border: 1px solid #222;
+      border-radius: 16px;
+      padding: 28px 24px;
+    }
+    .stat-number {
+      font-size: 40px;
+      font-weight: 700;
+      color: #f0ede8;
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+    .stat-desc { font-size: 14px; color: #6b6460; }
+
+    /* Feature grid */
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      margin-top: 40px;
+    }
+    .feature-card {
+      background: #141414;
+      border: 1px solid #222;
+      border-radius: 16px;
+      padding: 24px;
+    }
+    .feature-icon {
+      width: 40px; height: 40px;
+      background: #1a5c3a22;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 16px;
+      font-size: 20px;
+    }
+    .feature-card h3 { font-size: 16px; margin-bottom: 8px; color: #f0ede8; }
+    .feature-card p  { font-size: 13px; color: #6b6460; line-height: 1.5; }
+
+    /* Architecture diagram */
+    .arch-diagram {
+      margin-top: 48px;
+      position: relative;
+    }
+
+    .arch-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      margin-bottom: 0;
+    }
+
+    .arch-layer {
+      margin-bottom: 12px;
+    }
+
+    .arch-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #3d3830;
+      margin-bottom: 8px;
+    }
+
+    .arch-boxes {
+      display: flex;
+      gap: 10px;
+      align-items: stretch;
+    }
+
+    .arch-box {
+      background: #141414;
+      border: 1px solid #242424;
+      border-radius: 10px;
+      padding: 12px 18px;
+      font-size: 13px;
+      font-weight: 500;
+      color: #c0b8b0;
+      flex: 1;
+      text-align: center;
+    }
+    .arch-box.green {
+      background: #0d2218;
+      border-color: #1a5c3a55;
+      color: #4caf82;
+    }
+    .arch-box.blue {
+      background: #0d1822;
+      border-color: #1a3a5c55;
+      color: #5a9fd4;
+    }
+    .arch-box.purple {
+      background: #1a0d22;
+      border-color: #5c1a8055;
+      color: #b07ad4;
+    }
+    .arch-box .sub { font-size: 11px; color: #3d3830; margin-top: 2px; }
+
+    .arch-arrow {
+      text-align: center;
+      color: #2a2a2a;
+      font-size: 20px;
+      margin: 6px 0;
+    }
+
+    .arch-connector {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      margin: 6px 0;
+      color: #2d2d2d;
+      font-size: 12px;
+    }
+    .arch-connector .line {
+      flex: 1;
+      height: 1px;
+      background: #222;
+      max-width: 80px;
+    }
+
+    /* Tech stack pills */
+    .pill-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 32px;
+    }
+    .pill {
+      background: #141414;
+      border: 1px solid #222;
+      border-radius: 999px;
+      padding: 6px 16px;
+      font-size: 13px;
+      color: #a0998f;
+      font-weight: 500;
+    }
+    .pill.highlight {
+      background: #0d2218;
+      border-color: #1a5c3a55;
+      color: #4caf82;
+    }
+
+    /* AI section */
+    .ai-flow {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      margin-top: 40px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+    }
+    .ai-step {
+      background: #141414;
+      border: 1px solid #222;
+      border-radius: 12px;
+      padding: 16px 20px;
+      min-width: 140px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+    .ai-step .icon { font-size: 22px; margin-bottom: 8px; }
+    .ai-step .name { font-size: 12px; font-weight: 600; color: #f0ede8; }
+    .ai-step .desc { font-size: 11px; color: #4a4540; margin-top: 3px; }
+    .ai-arrow {
+      color: #2a2a2a;
+      font-size: 18px;
+      padding: 0 8px;
+      flex-shrink: 0;
+    }
+    .ai-step.active {
+      background: #0d2218;
+      border-color: #1a5c3a55;
+    }
+    .ai-step.active .name { color: #4caf82; }
+
+    /* Tools grid */
+    .tools-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-top: 32px;
+    }
+    .tool-chip {
+      background: #141414;
+      border: 1px solid #1e1e1e;
+      border-radius: 10px;
+      padding: 14px 16px;
+      font-size: 13px;
+      color: #8a8480;
+    }
+    .tool-chip .tool-name { color: #d0c8c0; font-weight: 600; font-size: 13px; margin-bottom: 3px; }
+
+    /* Status table */
+    .status-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 32px;
+    }
+    .status-table th {
+      text-align: left;
+      padding: 10px 16px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #3d3830;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    .status-table td {
+      padding: 14px 16px;
+      font-size: 14px;
+      color: #8a8480;
+      border-bottom: 1px solid #141414;
+    }
+    .status-table td:first-child { color: #d0c8c0; font-weight: 500; }
+    .badge {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 2px 10px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .badge.done   { background: #0d2218; color: #4caf82; }
+    .badge.next   { background: #1a1510; color: #c89a40; }
+
+    /* Divider */
+    .divider {
+      height: 1px;
+      background: #1a1a1a;
+      margin: 40px 0;
+    }
+
+    /* Slide number */
+    .slide-num {
+      font-size: 11px;
+      color: #2a2a2a;
+      text-align: right;
+      margin-top: auto;
+      padding-top: 40px;
+    }
+
+    @media print {
+      body { background: #fff; color: #111; }
+      .slide { border: none; page-break-after: always; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── SLIDE 1: HERO ──────────────────────────────────────────────────── -->
+<div class="slide">
+  <div class="hero-logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+      </svg>
+    </div>
+    <span class="logo-text">PropIQ</span>
+  </div>
+
+  <div class="label">Bangalore Real Estate Intelligence</div>
+  <h1>The smart way to own<br/>Bangalore property.</h1>
+
+  <p class="hero-tagline">
+    PropIQ is an AI-powered platform that gives Bangalore property owners a single place to track their portfolio, get instant valuations, understand the market, and take action — all backed by a conversational AI copilot.
+  </p>
+
+  <div class="hero-badge">✦ Built &amp; live — Full-stack MVP complete</div>
+
+  <p class="slide-num">01 / 07</p>
+</div>
+
+
+<!-- ── SLIDE 2: THE PROBLEM ───────────────────────────────────────────── -->
+<div class="slide">
+  <div class="label">The Problem</div>
+  <h2>Bangalore's property market is big,<br/>opaque, and fragmented.</h2>
+
+  <div class="stat-grid">
+    <div class="stat-card">
+      <div class="stat-number">₹8L <span style="font-size:22px;color:#3a3530">Cr</span></div>
+      <div class="stat-desc">Estimated value of Bangalore's residential real estate market</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">56+</div>
+      <div class="stat-desc">Distinct micro-markets, each with wildly different price dynamics</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">0</div>
+      <div class="stat-desc">Good tools for individual owners to track and understand their portfolio</div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <p>Property owners today manage everything manually — spreadsheets, WhatsApp groups, broker calls. There's no single source of truth for what their properties are actually worth, no easy way to compare markets, and no smart assistant to help them make decisions.</p>
+
+  <p class="slide-num">02 / 07</p>
+</div>
+
+
+<!-- ── SLIDE 3: THE SOLUTION ──────────────────────────────────────────── -->
+<div class="slide">
+  <div class="label">What We Built</div>
+  <h2>Six features. One platform.</h2>
+
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="feature-icon">🏠</div>
+      <h3>Portfolio Tracker</h3>
+      <p>Add properties, track purchase price vs. AI-estimated current value, see total returns and appreciation across your entire portfolio.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🧮</div>
+      <h3>AI Valuation</h3>
+      <p>Get instant estimates for any Bangalore property based on locality data, BHK, sqft, and comparable properties — no broker needed.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📈</div>
+      <h3>Market Analytics</h3>
+      <p>Live price-per-sqft tables for 56 localities, sortable rankings, price distribution charts, and city-wide benchmarks.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🏪</div>
+      <h3>P2P Marketplace</h3>
+      <p>Browse and list properties for sale or rent, with an AI Fair Price Badge that flags if an asking price is above or below market.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🛡️</div>
+      <h3>RERA Verification</h3>
+      <p>Instant fuzzy-search across 50 Karnataka RERA-registered projects. Check registration status before investing.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🤖</div>
+      <h3>AI Copilot</h3>
+      <p>A floating chat assistant that answers questions about your portfolio, finds the best localities, and can create listings — using real data.</p>
+    </div>
+  </div>
+
+  <p class="slide-num">03 / 07</p>
+</div>
+
+
+<!-- ── SLIDE 4: ARCHITECTURE ──────────────────────────────────────────── -->
+<div class="slide">
+  <div class="label">Architecture</div>
+  <h2>How it's built.</h2>
+
+  <div class="arch-diagram">
+
+    <!-- Layer 1: Users -->
+    <div class="arch-layer">
+      <div class="arch-label">Users</div>
+      <div class="arch-boxes">
+        <div class="arch-box">🌐 Browser (Desktop)
+          <div class="sub">Sidebar navigation</div>
+        </div>
+        <div class="arch-box">📱 Mobile Browser
+          <div class="sub">Bottom nav bar</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="arch-arrow">↕</div>
+
+    <!-- Layer 2: Frontend -->
+    <div class="arch-layer">
+      <div class="arch-label">Frontend — Next.js 14 App Router</div>
+      <div class="arch-boxes">
+        <div class="arch-box green">Portfolio Page
+          <div class="sub">CRUD · Supabase RLS</div>
+        </div>
+        <div class="arch-box green">Valuate Page
+          <div class="sub">Client-side formula</div>
+        </div>
+        <div class="arch-box green">Market Page
+          <div class="sub">Recharts · 56 localities</div>
+        </div>
+        <div class="arch-box green">Marketplace
+          <div class="sub">Fair Price Badge</div>
+        </div>
+        <div class="arch-box green">RERA Check
+          <div class="sub">fuse.js fuzzy search</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="arch-arrow">↕</div>
+
+    <!-- Layer 3: API -->
+    <div class="arch-layer">
+      <div class="arch-label">API Layer — Next.js Route Handlers</div>
+      <div class="arch-boxes">
+        <div class="arch-box blue">POST /api/chat
+          <div class="sub">Agentic ReAct loop · SSE streaming</div>
+        </div>
+        <div class="arch-box blue">GET /api/seed
+          <div class="sub">Dev data seeding</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="arch-arrow">↕</div>
+
+    <!-- Layer 4: AI + DB -->
+    <div class="arch-layer">
+      <div class="arch-label">Intelligence + Data</div>
+      <div class="arch-boxes">
+        <div class="arch-box purple">HuggingFace LLM
+          <div class="sub">Qwen2.5-7B · Tool calling</div>
+        </div>
+        <div class="arch-box purple">7 Agent Tools
+          <div class="sub">Portfolio · Valuation · Market · RERA · Listings</div>
+        </div>
+        <div class="arch-box blue">Supabase (Postgres)
+          <div class="sub">properties · listings · auth.users</div>
+        </div>
+        <div class="arch-box">Local JSON Data
+          <div class="sub">market_stats · rera_projects · localities</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="arch-arrow">↕</div>
+
+    <!-- Layer 5: Auth -->
+    <div class="arch-layer">
+      <div class="arch-label">Auth &amp; Security</div>
+      <div class="arch-boxes">
+        <div class="arch-box blue">Supabase Auth
+          <div class="sub">Email + password · JWT sessions</div>
+        </div>
+        <div class="arch-box blue">Row Level Security
+          <div class="sub">Users see only their own data</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <p class="slide-num">04 / 07</p>
+</div>
+
+
+<!-- ── SLIDE 5: AI COPILOT DEEP DIVE ─────────────────────────────────── -->
+<div class="slide">
+  <div class="label">AI Copilot — How It Works</div>
+  <h2>A ReAct agent that thinks,<br/>looks up data, then answers.</h2>
+
+  <div class="ai-flow">
+    <div class="ai-step">
+      <div class="icon">💬</div>
+      <div class="name">User Question</div>
+      <div class="desc">"What's my portfolio worth?"</div>
+    </div>
+    <div class="ai-arrow">→</div>
+    <div class="ai-step active">
+      <div class="icon">🧠</div>
+      <div class="name">LLM Reasoning</div>
+      <div class="desc">Decides which tools to call</div>
+    </div>
+    <div class="ai-arrow">→</div>
+    <div class="ai-step active">
+      <div class="icon">🔧</div>
+      <div class="name">Tool Execution</div>
+      <div class="desc">Fetches real DB / market data</div>
+    </div>
+    <div class="ai-arrow">→</div>
+    <div class="ai-step active">
+      <div class="icon">🧠</div>
+      <div class="name">LLM Synthesis</div>
+      <div class="desc">Generates answer from tool output</div>
+    </div>
+    <div class="ai-arrow">→</div>
+    <div class="ai-step">
+      <div class="icon">✨</div>
+      <div class="name">Streamed Reply</div>
+      <div class="desc">With tool call indicators in UI</div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <h3 style="color:#a0998f; font-size:14px; font-weight:600; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:16px">The 7 Tools Available to the Agent</h3>
+  <div class="tools-grid">
+    <div class="tool-chip">
+      <div class="tool-name">get_portfolio</div>
+      Fetches all user properties from DB
+    </div>
+    <div class="tool-chip">
+      <div class="tool-name">get_portfolio_summary</div>
+      Total value, returns, rank by gain
+    </div>
+    <div class="tool-chip">
+      <div class="tool-name">get_valuation</div>
+      AI price estimate for any property
+    </div>
+    <div class="tool-chip">
+      <div class="tool-name">get_market_stats</div>
+      56-locality market data
+    </div>
+    <div class="tool-chip">
+      <div class="tool-name">find_best_localities</div>
+      Best areas by budget + BHK
+    </div>
+    <div class="tool-chip">
+      <div class="tool-name">create_listing</div>
+      List a property on marketplace
+    </div>
+    <div class="tool-chip">
+      <div class="tool-name">check_rera</div>
+      RERA registration lookup
+    </div>
+    <div class="tool-chip" style="border-style:dashed; color:#2a2a2a">
+      <div class="tool-name" style="color:#2a2a2a">+ more coming</div>
+      Price alerts, investment scoring…
+    </div>
+  </div>
+
+  <p class="slide-num">05 / 07</p>
+</div>
+
+
+<!-- ── SLIDE 6: TECH STACK ────────────────────────────────────────────── -->
+<div class="slide">
+  <div class="label">Tech Stack</div>
+  <h2>Proven technologies.<br/>Built to scale.</h2>
+
+  <div class="divider"></div>
+
+  <table class="status-table">
+    <thead>
+      <tr>
+        <th>Layer</th>
+        <th>Technology</th>
+        <th>Purpose</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Frontend</td>
+        <td>Next.js 14 + TypeScript</td>
+        <td>App Router, SSR, API Routes</td>
+        <td><span class="badge done">Live</span></td>
+      </tr>
+      <tr>
+        <td>Styling</td>
+        <td>Tailwind CSS v4 + shadcn/ui</td>
+        <td>Custom design system, dark/light mode</td>
+        <td><span class="badge done">Live</span></td>
+      </tr>
+      <tr>
+        <td>Database</td>
+        <td>Supabase (PostgreSQL)</td>
+        <td>Properties, listings, Row Level Security</td>
+        <td><span class="badge done">Live</span></td>
+      </tr>
+      <tr>
+        <td>Auth</td>
+        <td>Supabase Auth</td>
+        <td>Email/password, JWT sessions</td>
+        <td><span class="badge done">Live</span></td>
+      </tr>
+      <tr>
+        <td>AI / LLM</td>
+        <td>HuggingFace Inference API</td>
+        <td>Qwen2.5-7B, tool calling, chat</td>
+        <td><span class="badge done">Live</span></td>
+      </tr>
+      <tr>
+        <td>Agentic Layer</td>
+        <td>LangGraph.js</td>
+        <td>ReAct loop, tool orchestration</td>
+        <td><span class="badge done">Live</span></td>
+      </tr>
+      <tr>
+        <td>Charts</td>
+        <td>Recharts</td>
+        <td>Price distribution, market charts</td>
+        <td><span class="badge done">Live</span></td>
+      </tr>
+      <tr>
+        <td>Search</td>
+        <td>fuse.js</td>
+        <td>Fuzzy RERA project lookup</td>
+        <td><span class="badge done">Live</span></td>
+      </tr>
+      <tr>
+        <td>Price Alerts</td>
+        <td>—</td>
+        <td>Notify when locality price changes</td>
+        <td><span class="badge next">Roadmap</span></td>
+      </tr>
+      <tr>
+        <td>Investment Score</td>
+        <td>—</td>
+        <td>AI-scored investment quality per locality</td>
+        <td><span class="badge next">Roadmap</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p class="slide-num">06 / 07</p>
+</div>
+
+
+<!-- ── SLIDE 7: WHAT'S NEXT ───────────────────────────────────────────── -->
+<div class="slide">
+  <div class="label">What's Next</div>
+  <h2>Phase 2 — Making it a real product.</h2>
+
+  <div class="stat-grid" style="grid-template-columns: repeat(2,1fr)">
+    <div class="stat-card">
+      <div style="font-size:28px;margin-bottom:12px">📊</div>
+      <h3 style="color:#f0ede8;margin-bottom:8px">Live Market Data</h3>
+      <p style="font-size:14px">Replace static JSON with real-time data feeds from MagicBricks / 99acres APIs. Weekly price updates per locality.</p>
+    </div>
+    <div class="stat-card">
+      <div style="font-size:28px;margin-bottom:12px">🔔</div>
+      <h3 style="color:#f0ede8;margin-bottom:8px">Price Alerts</h3>
+      <p style="font-size:14px">Email + push notifications when a tracked locality crosses a price threshold or a portfolio property changes in value.</p>
+    </div>
+    <div class="stat-card">
+      <div style="font-size:28px;margin-bottom:12px">🏦</div>
+      <h3 style="color:#f0ede8;margin-bottom:8px">Mortgage Calculator</h3>
+      <p style="font-size:14px">EMI planning, LTV analysis, break-even calculations. Integrated with the AI copilot for natural-language queries.</p>
+    </div>
+    <div class="stat-card">
+      <div style="font-size:28px;margin-bottom:12px">📱</div>
+      <h3 style="color:#f0ede8;margin-bottom:8px">Mobile App</h3>
+      <p style="font-size:14px">React Native app for on-the-go portfolio tracking, property photos, and push alerts when you're visiting sites.</p>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div style="display:flex;align-items:center;gap:16px">
+    <div class="logo-icon" style="width:40px;height:40px;flex-shrink:0">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px">
+        <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+      </svg>
+    </div>
+    <div>
+      <div style="font-weight:700;font-size:18px;color:#f0ede8">PropIQ</div>
+      <div style="font-size:13px;color:#4a4540">Built with Next.js · Supabase · HuggingFace · LangGraph</div>
+    </div>
+  </div>
+
+  <p class="slide-num">07 / 07</p>
+</div>
+
+</body>
+</html>

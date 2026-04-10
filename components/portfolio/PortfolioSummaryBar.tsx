@@ -1,7 +1,15 @@
 "use client";
 
 import { PortfolioSummary } from "@/lib/portfolio";
+import { formatLakhs } from "@/lib/utils/format";
 import { Building2, TrendingUp, TrendingDown, Wallet } from "lucide-react";
+import CountUp from "react-countup";
+
+function parseFormatted(formatted: string): { prefix: string; value: number; suffix: string } {
+  const match = formatted.match(/^(₹)([\d.]+)\s*(.*)$/);
+  if (!match) return { prefix: "", value: 0, suffix: formatted };
+  return { prefix: match[1], value: parseFloat(match[2]), suffix: match[3] ? " " + match[3] : "" };
+}
 
 interface PortfolioSummaryBarProps {
   summary: PortfolioSummary;
@@ -14,21 +22,21 @@ export function PortfolioSummaryBar({ summary }: PortfolioSummaryBarProps) {
   const cards = [
     {
       label: "Total Portfolio Value",
-      value: formatValue(totalValue),
+      value: formatLakhs(totalValue),
       icon: Building2,
       iconColor: "text-primary",
       iconBg: "bg-primary-highlight",
     },
     {
       label: "Total Invested",
-      value: formatValue(totalInvested),
+      value: formatLakhs(totalInvested),
       icon: Wallet,
       iconColor: "text-[#006494]",
       iconBg: "bg-[#e0f0f8] dark:bg-[#0a2030]",
     },
     {
       label: "Overall Return",
-      value: `${isPositive ? "+" : ""}${formatValue(Math.abs(totalReturn))} (${isPositive ? "+" : "-"}${Math.abs(returnPercent).toFixed(1)}%)`,
+      value: `${isPositive ? "+" : "-"}${formatLakhs(Math.abs(totalReturn))} (${isPositive ? "+" : "-"}${Math.abs(returnPercent).toFixed(1)}%)`,
       icon: isPositive ? TrendingUp : TrendingDown,
       iconColor: isPositive ? "text-[#437a22]" : "text-[#a13544]",
       iconBg: isPositive
@@ -45,14 +53,18 @@ export function PortfolioSummaryBar({ summary }: PortfolioSummaryBarProps) {
     },
   ];
 
+  const delays = ["delay-1", "delay-2", "delay-3", "delay-4"];
+
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-      {cards.map((card) => {
+      {cards.map((card, index) => {
         const Icon = card.icon;
+        const parsed = parseFormatted(card.value);
+        const canAnimate = parsed.value > 0 && !card.value.includes("(");
         return (
           <div
             key={card.label}
-            className="bg-surface border border-border rounded-xl p-4 shadow-sm"
+            className={`bg-surface border border-border rounded-xl p-4 shadow-sm animate-fade-in-up ${delays[index]} transition-all duration-200 ease-out hover:shadow-md hover:-translate-y-0.5 hover:border-primary/20`}
           >
             <div className="flex items-center gap-3 mb-3">
               <div
@@ -69,7 +81,19 @@ export function PortfolioSummaryBar({ summary }: PortfolioSummaryBarProps) {
                 card.valueColor ?? "text-foreground"
               }`}
             >
-              {card.value}
+              {canAnimate ? (
+                <CountUp
+                  start={0}
+                  end={parsed.value}
+                  duration={1.2}
+                  decimals={parsed.suffix.includes("Cr") ? 2 : parsed.suffix.includes("L") ? 1 : 0}
+                  prefix={parsed.prefix}
+                  suffix={parsed.suffix}
+                  useEasing
+                />
+              ) : (
+                card.value
+              )}
             </p>
           </div>
         );
@@ -78,12 +102,3 @@ export function PortfolioSummaryBar({ summary }: PortfolioSummaryBarProps) {
   );
 }
 
-function formatValue(value: number): string {
-  if (value >= 10000000) {
-    return `₹${(value / 10000000).toFixed(2)} Cr`;
-  }
-  if (value >= 100000) {
-    return `₹${(value / 100000).toFixed(1)} L`;
-  }
-  return `₹${value.toFixed(0)}`;
-}

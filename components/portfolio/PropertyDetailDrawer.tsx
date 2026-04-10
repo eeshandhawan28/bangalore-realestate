@@ -8,6 +8,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { formatLakhs, formatPricePerSqft } from "@/lib/utils/format";
+import marketStats from "@/lib/data/market_stats.json";
 import {
   LineChart,
   Line,
@@ -55,11 +56,39 @@ export function PropertyDetailDrawer({
   const currentValue =
     property.ai_estimated_value_lakhs ?? property.purchase_price_lakhs;
 
-  // Rough rental yield estimate: ~3.6% annual yield (0.3% monthly)
+  // Rental yield
   const monthlyRent = Math.round((currentValue * 100000 * 0.003) / 1000) * 1000;
   const annualRent = monthlyRent * 12;
   const rentalYield = ((annualRent / (currentValue * 100000)) * 100).toFixed(1);
   const pricePerSqft = Math.round((currentValue * 100000) / property.total_sqft);
+
+  // CAGR
+  const purchaseYear = new Date(property.purchase_date);
+  const holdingYears = (Date.now() - purchaseYear.getTime()) / (1000 * 60 * 60 * 24 * 365.25);
+  const cagr =
+    holdingYears > 0.5 && property.purchase_price_lakhs > 0
+      ? ((Math.pow(currentValue / property.purchase_price_lakhs, 1 / holdingYears) - 1) * 100).toFixed(1)
+      : null;
+
+  // Market comparison
+  const buyPsf = Math.round((property.purchase_price_lakhs * 100000) / property.total_sqft);
+  const localityData = marketStats.localities.find(
+    (l) => l.name.toLowerCase() === property.location.toLowerCase()
+  );
+  const localityAvgPsf = localityData?.avg_price_per_sqft ?? null;
+  const cityAvgPsf = marketStats.city_summary.avg_price_per_sqft;
+  const vsLocalityPct =
+    localityAvgPsf != null
+      ? ((buyPsf - localityAvgPsf) / localityAvgPsf) * 100
+      : null;
+  const vsLocalityLabel =
+    vsLocalityPct == null
+      ? null
+      : vsLocalityPct < -5
+      ? { text: `${Math.abs(vsLocalityPct).toFixed(0)}% below avg ✓`, color: "text-[#437a22] dark:text-[#6fbc3a]" }
+      : vsLocalityPct > 5
+      ? { text: `${vsLocalityPct.toFixed(0)}% above avg`, color: "text-[#92400e] dark:text-[#fbbf24]" }
+      : { text: "At market avg", color: "text-muted-foreground" };
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -107,10 +136,45 @@ export function PropertyDetailDrawer({
                 {formatLakhs(currentValue)}
               </span>
             </div>
+            {cagr != null && (
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">CAGR</span>
+                <span className={`font-semibold ${Number(cagr) >= 0 ? "text-[#437a22] dark:text-[#6fbc3a]" : "text-destructive"}`}>
+                  {Number(cagr) >= 0 ? "+" : ""}{cagr}% p.a.
+                </span>
+              </div>
+            )}
             <div className="flex justify-between text-sm pt-2 border-t border-border">
               <span className="text-muted-foreground">Est. Rental Yield</span>
               <span className="font-semibold">~{rentalYield}% p.a.</span>
             </div>
+          </div>
+
+          {/* Market Comparison */}
+          <div className="bg-muted rounded-xl p-4 space-y-2">
+            <p className="text-sm font-semibold text-foreground mb-1">Market Comparison</p>
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">Your buy price</span>
+              <span className="font-medium">{formatPricePerSqft(buyPsf)}</span>
+            </div>
+            {localityAvgPsf != null && (
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">{property.location} avg now</span>
+                <span className="font-medium">{formatPricePerSqft(localityAvgPsf)}</span>
+              </div>
+            )}
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">Bangalore avg</span>
+              <span className="font-medium">{formatPricePerSqft(cityAvgPsf)}</span>
+            </div>
+            {vsLocalityLabel && (
+              <div className="flex justify-between text-sm pt-2 border-t border-border">
+                <span className="text-muted-foreground">vs locality avg</span>
+                <span className={`font-semibold ${vsLocalityLabel.color}`}>
+                  {vsLocalityLabel.text}
+                </span>
+              </div>
+            )}
           </div>
 
           {/* Value over time chart */}

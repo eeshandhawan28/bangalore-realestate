@@ -84,4 +84,66 @@
   .font-display {
     font-family: 'Clash Display', 'Inter', sans-serif;
   }
+
+  /* Entrance animations */
+  .animate-fade-in       { animation: fadeIn 0.5s ease-out both; }
+  .animate-fade-in-up    { animation: fadeInUp 0.45s ease-out both; }
+  .animate-scale-in      { animation: scaleIn 0.3s ease-out both; }
+
+  /* Stagger delays */
+  .delay-1 { animation-delay: 60ms; }
+  .delay-2 { animation-delay: 120ms; }
+  .delay-3 { animation-delay: 180ms; }
+  .delay-4 { animation-delay: 240ms; }
+  .delay-5 { animation-delay: 300ms; }
+
+  /* Skeleton shimmer */
+  .animate-shimmer {
+    background: linear-gradient(90deg, var(--color-muted) 0%, var(--color-border) 50%, var(--color-muted) 100%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s ease-in-out infinite;
+  }
+
+  /* Chat panel spring entrance */
+  .animate-chat-open {
+    animation: chatOpen 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+
+  /* Sidebar active indicator bar */
+  .nav-indicator { position: relative; }
+  .nav-indicator::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 60%;
+    border-radius: 0 3px 3px 0;
+    background: var(--color-primary);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+  .nav-indicator-active::before { opacity: 1; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.92); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+@keyframes chatOpen {
+  from { opacity: 0; transform: scale(0.9) translateY(10px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
 }
