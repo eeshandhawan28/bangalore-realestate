@@ -9,7 +9,6 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Legend,
 } from "recharts";
 import priceHistory from "@/lib/data/locality_price_history.json";
 
@@ -17,8 +16,9 @@ const ALL_LOCALITIES = Object.keys(priceHistory.localities);
 const PERIODS = priceHistory.periods;
 const DATA = priceHistory.localities as Record<string, number[]>;
 
-// Range → starting index in the 11-point series
-const RANGE_START: Record<string, number> = { "1Y": 8, "3Y": 4, "5Y": 0 };
+// Range → starting index in the 13-point series (Q4'19–Q4'25)
+// 1Y: Q4'24(10)→Q4'25(12)  3Y: Q4'22(6)→Q4'25(12)  5Y: Q4'19(0)→Q4'25(12)
+const RANGE_START: Record<string, number> = { "1Y": 10, "3Y": 6, "5Y": 0 };
 
 const COLORS = [
   "#2d8a58", "#3b82f6", "#f59e0b", "#a855f7",
@@ -70,7 +70,7 @@ export function AppreciationTrendsChart() {
     const values = DATA[loc];
     if (!values) return { loc, pct: 0 };
     const start = values[startIdx];
-    const end = values[10];
+    const end = values[values.length - 1];
     const pct = ((end - start) / start) * 100;
     return { loc, pct };
   });
@@ -170,7 +170,7 @@ export function AppreciationTrendsChart() {
       <div>
         <p className="text-xs text-muted-foreground mb-2">Toggle localities ({selected.length}/7 selected)</p>
         <div className="flex flex-wrap gap-2">
-          {ALL_LOCALITIES.map((loc, i) => {
+          {ALL_LOCALITIES.map((loc) => {
             const isOn = selected.includes(loc);
             const color = COLORS[selected.indexOf(loc) % COLORS.length];
             return (

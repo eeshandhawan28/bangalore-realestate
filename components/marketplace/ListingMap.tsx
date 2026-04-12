@@ -2,9 +2,7 @@
 
 import { useJsApiLoader, GoogleMap, Marker, InfoWindow } from "@react-google-maps/api";
 import { useState, useCallback } from "react";
-import { MapPin, Phone, Mail, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { FairPriceBadge } from "./FairPriceBadge";
+import { MapPin, Phone, Mail } from "lucide-react";
 import { formatLakhs } from "@/lib/utils/format";
 
 interface Listing {

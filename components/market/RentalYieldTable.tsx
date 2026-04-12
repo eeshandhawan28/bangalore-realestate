@@ -53,7 +53,6 @@ export function RentalYieldTable() {
 
   const sorted = [...ROWS].sort((a, b) => b[sortKey] - a[sortKey]);
   const maxYield = Math.max(...ROWS.map((r) => r.gross_yield_2bhk_pct));
-  const max5yAppreciation = Math.max(...ROWS.map((r) => r.appreciation_5y_pct));
 
   // Budget-based recommendations: find localities where 2BHK median is within budget
   // We use gross_yield as a proxy for "best investment" within budget

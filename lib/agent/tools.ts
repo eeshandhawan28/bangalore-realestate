@@ -2,9 +2,29 @@ import { DynamicStructuredTool } from "@langchain/core/tools";
 import { z } from "zod";
 import { SupabaseClient } from "@supabase/supabase-js";
 import { calculateValuation } from "@/lib/valuation";
+import { calculateScore } from "@/lib/scores";
 import marketStats from "@/lib/data/market_stats.json";
 import reraProjects from "@/lib/data/rera_projects.json";
+import rentalYields from "@/lib/data/locality_rental_yields.json";
+import sentimentData from "@/lib/data/locality_sentiment.json";
+import priceHistory from "@/lib/data/locality_price_history.json";
 import Fuse from "fuse.js";
+
+const YIELDS = rentalYields as Record<string, {
+  rent_2bhk: number;
+  net_yield_pct: number;
+  gross_yield_2bhk_pct: number;
+  appreciation_5y_pct: number;
+  appreciation_1y_pct: number;
+  rental_demand: string;
+}>;
+const SENTIMENT = sentimentData as Record<string, {
+  sentiment_score: number;
+  trend: "up" | "stable" | "down";
+  highlights: string[];
+}>;
+const HISTORY = priceHistory.localities as Record<string, number[]>;
+const PERIODS = priceHistory.periods;
 
 export function createAgentTools(supabase: SupabaseClient) {
   const getPortfolio = new DynamicStructuredTool({
@@ -328,6 +348,265 @@ export function createAgentTools(supabase: SupabaseClient) {
     },
   });
 
+  // ─── Tool 8: Portfolio Health ──────────────────────────────────────────────
+  const getPortfolioHealth = new DynamicStructuredTool({
+    name: "get_portfolio_health",
+    description:
+      "Scores the user's overall portfolio health across 4 dimensions: diversification (spread across localities), yield (rental income vs benchmark), appreciation momentum (1Y price growth), and liquidity (% in high-demand areas). Returns a 0–100 score with breakdown.",
+    schema: z.object({}),
+    async func() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return "User is not authenticated.";
+
+      const { data, error } = await supabase.from("properties").select("*");
+      if (error) return `Error: ${error.message}`;
+      if (!data || data.length === 0) return "No properties in portfolio.";
+
+      const localities = new Set(data.map((p: Record<string, unknown>) => p.location as string));
+      const diversificationScore = Math.min((localities.size / 4) * 100, 100);
+
+      const avgYield = data.reduce((s: number, p: Record<string, unknown>) => {
+        return s + (YIELDS[p.location as string]?.net_yield_pct ?? 2.5);
+      }, 0) / data.length;
+      const yieldScore = Math.min((avgYield / 3.1) * 100, 100);
+
+      const avgAppreciation = data.reduce((s: number, p: Record<string, unknown>) => {
+        return s + (YIELDS[p.location as string]?.appreciation_1y_pct ?? 5);
+      }, 0) / data.length;
+      const appreciationScore = Math.min((avgAppreciation / 10) * 100, 100);
+
+      const highDemand = data.filter((p: Record<string, unknown>) =>
+        YIELDS[p.location as string]?.rental_demand === "High"
+      ).length;
+      const liquidityScore = data.length > 0 ? (highDemand / data.length) * 100 : 0;
+
+      const overall = Math.round(
+        diversificationScore * 0.25 + yieldScore * 0.30 +
+        appreciationScore * 0.25 + liquidityScore * 0.20
+      );
+
+      return JSON.stringify({
+        overall_score: overall,
+        verdict: overall >= 75 ? "Healthy" : overall >= 50 ? "Needs attention" : "At risk",
+        breakdown: {
+          diversification: { score: Math.round(diversificationScore), localities_count: localities.size, note: "4+ different localities = 100" },
+          yield: { score: Math.round(yieldScore), avg_net_yield_pct: avgYield.toFixed(2), benchmark_pct: "3.1" },
+          appreciation: { score: Math.round(appreciationScore), avg_1y_appreciation_pct: avgAppreciation.toFixed(1) },
+          liquidity: { score: Math.round(liquidityScore), high_demand_properties: highDemand, total_properties: data.length },
+        },
+      }, null, 2);
+    },
+  });
+
+  // ─── Tool 9: Sell Recommendation ──────────────────────────────────────────
+  const getSellRecommendation = new DynamicStructuredTool({
+    name: "get_sell_recommendation",
+    description:
+      "Analyses which properties in the user's portfolio are candidates for selling vs holding. Sell signals: >40% appreciation + low yield + declining sentiment. Hold signals: strong 1Y momentum, improving sentiment, above-average yield.",
+    schema: z.object({
+      property_id: z.string().optional().describe("Analyse a specific property by ID. If omitted, analyses all portfolio properties."),
+    }),
+    async func({ property_id }) {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return "User is not authenticated.";
+
+      const query = supabase.from("properties").select("*");
+      const { data, error } = property_id
+        ? await query.eq("id", property_id)
+        : await query;
+
+      if (error) return `Error: ${error.message}`;
+      if (!data || data.length === 0) return "No properties found.";
+
+      const recommendations = (data as Record<string, unknown>[]).map((p) => {
+        const loc = p.location as string;
+        const yieldData = YIELDS[loc];
+        const sent = SENTIMENT[loc];
+        const val = calculateValuation({
+          location: loc,
+          area_type: (p.area_type as string) ?? "Super built-up Area",
+          total_sqft: p.total_sqft as number,
+          bhk: p.bhk as number,
+          bathrooms: (p.bathrooms as number) ?? 2,
+          balconies: (p.balconies as number) ?? 1,
+        });
+
+        const purchasePrice = p.purchase_price_lakhs as number;
+        const gainPct = ((val.predicted_price_lakhs - purchasePrice) / purchasePrice) * 100;
+
+        const sellSignals: string[] = [];
+        if (gainPct > 40) sellSignals.push(`+${gainPct.toFixed(0)}% appreciation — strong exit opportunity`);
+        if ((yieldData?.net_yield_pct ?? 3) < 2.5) sellSignals.push(`Low net yield ${yieldData?.net_yield_pct?.toFixed(2) ?? "~2.5"}% (below 2.5% threshold)`);
+        if (sent?.trend === "down") sellSignals.push("Declining area sentiment — momentum may be fading");
+
+        const holdSignals: string[] = [];
+        if ((yieldData?.appreciation_1y_pct ?? 5) > 8) holdSignals.push(`Strong 1Y price momentum +${yieldData?.appreciation_1y_pct}%`);
+        if (sent?.trend === "up") holdSignals.push("Improving sentiment — infrastructure development incoming");
+        if ((yieldData?.net_yield_pct ?? 3) > 3.5) holdSignals.push(`Above-average yield ${yieldData?.net_yield_pct}%`);
+
+        const recommendation = sellSignals.length >= 2 ? "CONSIDER SELLING"
+          : holdSignals.length >= 2 ? "HOLD"
+          : "NEUTRAL";
+
+        return {
+          name: p.name,
+          location: loc,
+          purchase_price_lakhs: purchasePrice,
+          current_estimated_value_lakhs: val.predicted_price_lakhs,
+          gain_pct: gainPct.toFixed(1),
+          recommendation,
+          sell_signals: sellSignals,
+          hold_signals: holdSignals,
+        };
+      });
+
+      return JSON.stringify(recommendations, null, 2);
+    },
+  });
+
+  // ─── Tool 10: Locality Deep Dive ──────────────────────────────────────────
+  const getLocalityDeepDive = new DynamicStructuredTool({
+    name: "get_locality_deep_dive",
+    description:
+      "Returns a comprehensive profile of a single Bangalore locality: current ₹/sqft, BHK medians, price history (last 6 periods), rental yield, net yield, 5Y appreciation, sentiment score + trend + development highlights, and PropIQ investment score. Use this when the user asks about a specific locality.",
+    schema: z.object({
+      locality: z.string().describe("Locality name (e.g. Koramangala, Whitefield, Devanahalli)"),
+    }),
+    async func({ locality }) {
+      // Fuzzy name match against known localities
+      const known = Object.keys(HISTORY);
+      const match = known.find((k) => k.toLowerCase() === locality.toLowerCase())
+        ?? known.find((k) => k.toLowerCase().includes(locality.toLowerCase()))
+        ?? known.find((k) => locality.toLowerCase().includes(k.toLowerCase()));
+
+      if (!match) return `No data found for "${locality}". Known localities include: ${known.slice(0, 10).join(", ")}...`;
+
+      const stats = marketStats.localities.find((l) => l.name.toLowerCase() === match.toLowerCase());
+      const yld = YIELDS[match];
+      const sent = SENTIMENT[match];
+      const hist = HISTORY[match];
+      const score = calculateScore(match);
+
+      // Last 6 periods
+      const last6Periods = PERIODS.slice(-6);
+      const last6Prices = hist ? hist.slice(-6) : [];
+
+      return JSON.stringify({
+        locality: match,
+        market: stats ?? { note: "Not in top-20 market_stats, using price history data" },
+        current_price_per_sqft: hist ? hist[hist.length - 1] : null,
+        price_history_last_6: last6Periods.map((p, i) => ({ period: p, price_per_sqft: last6Prices[i] })),
+        rental_yield: yld ?? null,
+        sentiment: sent ?? null,
+        investment_score: {
+          score: score.score,
+          grade: score.grade,
+          components: score.components,
+        },
+      }, null, 2);
+    },
+  });
+
+  // ─── Tool 11: Compare Localities ──────────────────────────────────────────
+  const compareLocalities = new DynamicStructuredTool({
+    name: "compare_localities",
+    description:
+      "Side-by-side comparison of 2–3 Bangalore localities. Returns price/sqft, 2BHK median, net yield, 5Y appreciation, sentiment trend, and PropIQ investment score for each. Recommends the best for investors or end-users.",
+    schema: z.object({
+      localities: z.array(z.string()).min(2).max(3).describe("2 or 3 locality names to compare"),
+      buyer_profile: z.enum(["investor", "end_user"]).optional().default("investor").describe("investor = highest score wins; end_user = lowest entry price wins"),
+    }),
+    async func({ localities, buyer_profile }) {
+      const profiles = localities.map((name) => {
+        const known = Object.keys(HISTORY);
+        const match = known.find((k) => k.toLowerCase() === name.toLowerCase())
+          ?? known.find((k) => k.toLowerCase().includes(name.toLowerCase()))
+          ?? name;
+
+        const stats = marketStats.localities.find((l) => l.name.toLowerCase() === match.toLowerCase());
+        const yld = YIELDS[match];
+        const sent = SENTIMENT[match];
+        const hist = HISTORY[match];
+        const score = calculateScore(match);
+
+        return {
+          locality: match,
+          avg_price_per_sqft: hist ? hist[hist.length - 1] : stats?.avg_price_per_sqft ?? null,
+          median_2bhk_lakhs: stats?.median_2bhk_lakhs ?? null,
+          net_yield_pct: yld?.net_yield_pct ?? null,
+          appreciation_5y_pct: yld?.appreciation_5y_pct ?? null,
+          appreciation_1y_pct: yld?.appreciation_1y_pct ?? null,
+          rental_demand: yld?.rental_demand ?? null,
+          sentiment_trend: sent?.trend ?? null,
+          sentiment_highlights: sent?.highlights ?? [],
+          investment_score: score.score,
+          grade: score.grade,
+        };
+      });
+
+      const recommended = buyer_profile === "end_user"
+        ? [...profiles].sort((a, b) => (a.avg_price_per_sqft ?? 999999) - (b.avg_price_per_sqft ?? 999999))[0].locality
+        : [...profiles].sort((a, b) => b.investment_score - a.investment_score)[0].locality;
+
+      return JSON.stringify({
+        comparison: profiles,
+        recommended_for_profile: recommended,
+        reason: buyer_profile === "end_user"
+          ? "Lowest entry price per sqft for end-users"
+          : "Highest PropIQ Investment Score for investors",
+      }, null, 2);
+    },
+  });
+
+  // ─── Tool 12: Evaluate Deal ───────────────────────────────────────────────
+  const evaluateDeal = new DynamicStructuredTool({
+    name: "evaluate_deal",
+    description:
+      "Evaluates whether a property's asking price is a good deal vs AI fair market value. Use this when a user shares a listing price and wants to know if it's worth it.",
+    schema: z.object({
+      location: z.string().describe("Locality in Bangalore"),
+      bhk: z.number().describe("Number of bedrooms"),
+      total_sqft: z.number().describe("Total area in sqft"),
+      asking_price_lakhs: z.number().describe("Listed asking price in lakhs"),
+      area_type: z.string().optional().default("Super built-up Area"),
+    }),
+    async func({ location, bhk, total_sqft, asking_price_lakhs, area_type }) {
+      const val = calculateValuation({
+        location,
+        area_type: area_type ?? "Super built-up Area",
+        total_sqft,
+        bhk,
+        bathrooms: bhk >= 3 ? 2 : bhk,
+        balconies: 1,
+      });
+
+      const yld = YIELDS[location];
+      const sent = SENTIMENT[location];
+      const overUnderPct = ((asking_price_lakhs - val.predicted_price_lakhs) / val.predicted_price_lakhs) * 100;
+
+      const verdict = overUnderPct <= -7 ? "🟢 GOOD DEAL"
+        : overUnderPct <= 5 ? "🟡 FAIR PRICE"
+        : "🔴 OVERPRICED";
+
+      const estimatedMonthlyRent = yld
+        ? Math.round((asking_price_lakhs * 100000 * (yld.net_yield_pct / 100)) / 12)
+        : null;
+
+      return JSON.stringify({
+        asking_price_lakhs,
+        ai_fair_value_lakhs: val.predicted_price_lakhs,
+        price_range: { lower: val.lower_bound, upper: val.upper_bound },
+        price_vs_fair_pct: `${overUnderPct > 0 ? "+" : ""}${overUnderPct.toFixed(1)}%`,
+        verdict,
+        estimated_monthly_rent: estimatedMonthlyRent,
+        net_rental_yield_pct: yld?.net_yield_pct ?? null,
+        area_sentiment: sent?.trend ?? null,
+        area_development_signals: sent?.highlights ?? [],
+        note: "Fair value ± 5% is considered a fair deal. Below −7% = good deal.",
+      }, null, 2);
+    },
+  });
+
   return [
     getPortfolio,
     getPortfolioSummary,
@@ -336,5 +615,10 @@ export function createAgentTools(supabase: SupabaseClient) {
     findBestLocalities,
     createListing,
     checkRera,
+    getPortfolioHealth,
+    getSellRecommendation,
+    getLocalityDeepDive,
+    compareLocalities,
+    evaluateDeal,
   ];
 }

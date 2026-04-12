@@ -7,13 +7,34 @@ import { createAgentTools } from "@/lib/agent/tools";
 
 const MODEL = "Qwen/Qwen2.5-7B-Instruct";
 
-const SYSTEM_PROMPT = `You are PropIQ Copilot, an AI assistant specialized in Bangalore real estate.
+const BASE_PROMPT = `You are PropIQ Copilot, an AI assistant specialized in Bangalore real estate.
 
-You have access to tools to fetch the user's portfolio, run valuations, query market stats, find localities by budget, create listings, and check RERA registrations.
+You have access to tools to fetch the user's portfolio, run valuations, query market stats, find localities by budget, create listings, check RERA registrations, analyse portfolio health, evaluate deals, and compare localities.
 
-ALWAYS call the appropriate tool before answering questions that require data.
+ALWAYS call the appropriate tool before answering — even in follow-up messages that reference a previously mentioned locality or property. Never answer from memory if fresh tool data is available.
 Format all prices in Indian notation: ₹XL for lakhs (e.g. ₹85L), ₹X Cr for crores (e.g. ₹1.2 Cr).
-Keep answers concise and actionable. Market data is from Q4 2024.`;
+Keep answers concise and actionable. Market data includes Q4 2025 projections.`;
+
+const INTENT_PROMPTS = {
+  portfolio: `You are a portfolio analyst for PropIQ. Focus on portfolio health, returns, sell/hold decisions, and yield optimization. Always call get_portfolio_health or get_sell_recommendation when the user asks about their holdings.`,
+  market: `You are a Bangalore market intelligence specialist for PropIQ. Focus on locality analysis, investment scores, price trends, and area comparisons. Use get_locality_deep_dive for specific area queries and compare_localities for comparisons. When the user says "add X", "also show X", "include X", or "what about X" — you MUST call get_locality_deep_dive for that new locality immediately. Never use previously seen data from conversation history — always call the tool.`,
+  deal: `You are a deal evaluation expert for PropIQ. Help the user assess whether a specific property is priced fairly. Always call evaluate_deal when given a property price, size, and location.`,
+  general: "",
+};
+
+function detectIntent(message: string): "portfolio" | "market" | "deal" | "general" {
+  const m = message.toLowerCase();
+  if (/portfolio|my propert|my holding|sell|gain|loss|return|health/.test(m)) return "portfolio";
+  if (/locality|area|where.*buy|market|koramangala|whitefield|indiranagar|invest|score|trend|deep.?dive|compare|add.*nagar|add.*halli|add.*road|also show|what about/.test(m)) return "market";
+  if (/listing|deal|price.*good|fair.*price|afford|is it.*worth|2bhk|3bhk|find.*flat|sqft|asking/.test(m)) return "deal";
+  return "general";
+}
+
+function buildSystemPrompt(message: string): string {
+  const intent = detectIntent(message);
+  const prefix = INTENT_PROMPTS[intent];
+  return prefix ? `${prefix}\n\n${BASE_PROMPT}` : BASE_PROMPT;
+}
 
 // OpenAI-format tool specs for the HF chat API
 const TOOL_SPECS = [
@@ -122,7 +143,209 @@ const TOOL_SPECS = [
       },
     },
   },
+  {
+    type: "function" as const,
+    function: {
+      name: "get_portfolio_health",
+      description: "Scores the user's portfolio across 4 dimensions: diversification, yield, appreciation, and liquidity. Returns an overall health score with recommendations.",
+      parameters: { type: "object", properties: {} },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "get_sell_recommendation",
+      description: "Analyses each property in the portfolio to decide whether to hold or sell based on gain %, net yield, and sentiment trend.",
+      parameters: {
+        type: "object",
+        properties: {
+          property_id: { type: "string", description: "Optional — analyse a single property by ID instead of the whole portfolio" },
+        },
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "get_locality_deep_dive",
+      description: "Returns a full profile for a Bangalore locality: price/sqft, BHK medians, price history, rental yield, sentiment score, investment score, and development highlights.",
+      parameters: {
+        type: "object",
+        required: ["locality"],
+        properties: {
+          locality: { type: "string", description: "Locality name, e.g. Koramangala, Whitefield, Devanahalli" },
+        },
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "compare_localities",
+      description: "Compares 2–3 Bangalore localities side by side on price, yield, appreciation, and investment score. Recommends the best match for investor or end-user profiles.",
+      parameters: {
+        type: "object",
+        required: ["localities"],
+        properties: {
+          localities: { type: "array", items: { type: "string" }, description: "2 or 3 locality names to compare" },
+          buyer_profile: { type: "string", enum: ["investor", "end_user"], description: "Optimise recommendation for highest return (investor) or lowest entry price (end_user)" },
+        },
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "evaluate_deal",
+      description: "Given a property's locality, size, BHK, and asking price, returns a verdict: GOOD DEAL, FAIR, or OVERPRICED vs the AI fair value estimate.",
+      parameters: {
+        type: "object",
+        required: ["location", "bhk", "total_sqft", "asking_price_lakhs"],
+        properties: {
+          location: { type: "string" },
+          bhk: { type: "number" },
+          total_sqft: { type: "number" },
+          asking_price_lakhs: { type: "number" },
+        },
+      },
+    },
+  },
 ];
+
+type ChartData = {
+  type: "bar" | "line" | "grouped_bar";
+  title: string;
+  data: Record<string, unknown>[];
+  xKey: string;
+  yKeys: string[];
+  colors?: string[];
+  unit?: string;
+};
+
+function buildChartEvent(toolName: string, result: string): { type: "chart"; chart: ChartData } | null {
+  try {
+    const parsed = JSON.parse(result);
+
+    if (toolName === "get_portfolio_health" && parsed.breakdown) {
+      const { diversification, yield: yld, appreciation, liquidity } = parsed.breakdown;
+      return {
+        type: "chart",
+        chart: {
+          type: "bar",
+          title: `Portfolio Health — Overall ${parsed.overall_score}/100`,
+          data: [
+            { dimension: "Diversification", score: diversification.score },
+            { dimension: "Yield", score: yld.score },
+            { dimension: "Appreciation", score: appreciation.score },
+            { dimension: "Liquidity", score: liquidity.score },
+          ],
+          xKey: "dimension",
+          yKeys: ["score"],
+          colors: ["#6366f1"],
+          unit: "/100",
+        },
+      };
+    }
+
+    if (toolName === "get_sell_recommendation" && Array.isArray(parsed) && parsed.length > 0) {
+      return {
+        type: "chart",
+        chart: {
+          type: "bar",
+          title: "Property Appreciation Gains",
+          data: parsed.map((p: Record<string, unknown>) => ({
+            name: String(p.name ?? "").split(" ").slice(0, 2).join(" "),
+            "Gain %": parseFloat(String(p.gain_pct ?? "0")),
+          })),
+          xKey: "name",
+          yKeys: ["Gain %"],
+          colors: ["#10b981"],
+          unit: "%",
+        },
+      };
+    }
+
+    if (toolName === "get_portfolio_summary" && parsed.properties_ranked_by_gain) {
+      return {
+        type: "chart",
+        chart: {
+          type: "grouped_bar",
+          title: "Portfolio — Invested vs Current Value (₹L)",
+          data: (parsed.properties_ranked_by_gain as Record<string, unknown>[]).map((p) => ({
+            name: String(p.name ?? "").split(" ").slice(0, 2).join(" "),
+            Invested: p.purchase_price_lakhs,
+            Current: p.current_value_lakhs,
+          })),
+          xKey: "name",
+          yKeys: ["Invested", "Current"],
+          colors: ["#94a3b8", "#6366f1"],
+          unit: "L",
+        },
+      };
+    }
+
+    if (toolName === "get_locality_deep_dive" && Array.isArray(parsed.price_history_last_6)) {
+      return {
+        type: "chart",
+        chart: {
+          type: "line",
+          title: `${parsed.locality} — Price Trend`,
+          data: (parsed.price_history_last_6 as Record<string, unknown>[]).map((h) => ({
+            period: h.period,
+            "₹/sqft": h.price_per_sqft,
+          })),
+          xKey: "period",
+          yKeys: ["₹/sqft"],
+          colors: ["#6366f1"],
+          unit: "₹/sqft",
+        },
+      };
+    }
+
+    if (toolName === "compare_localities" && Array.isArray(parsed.comparison)) {
+      const locs = parsed.comparison as Record<string, unknown>[];
+      const locNames = locs.map((l) => String(l.locality));
+      return {
+        type: "chart",
+        chart: {
+          type: "grouped_bar",
+          title: locNames.join(" vs "),
+          data: [
+            { metric: "Inv. Score", ...Object.fromEntries(locs.map((l) => [l.locality, l.investment_score])) },
+            { metric: "Net Yield %", ...Object.fromEntries(locs.map((l) => [l.locality, l.net_yield_pct])) },
+            { metric: "5Y Appre %", ...Object.fromEntries(locs.map((l) => [l.locality, l.appreciation_5y_pct])) },
+          ],
+          xKey: "metric",
+          yKeys: locNames,
+          colors: ["#6366f1", "#10b981", "#f59e0b"],
+        },
+      };
+    }
+
+    if (toolName === "evaluate_deal" && parsed.asking_price_lakhs != null) {
+      return {
+        type: "chart",
+        chart: {
+          type: "bar",
+          title: "Deal Evaluation (₹L)",
+          data: [
+            { label: "Asking", value: parsed.asking_price_lakhs },
+            { label: "AI Fair Value", value: parsed.ai_fair_value_lakhs },
+            { label: "Lower Bound", value: parsed.price_range?.lower },
+            { label: "Upper Bound", value: parsed.price_range?.upper },
+          ].filter((d) => d.value != null),
+          xKey: "label",
+          yKeys: ["value"],
+          colors: ["#f59e0b", "#6366f1", "#94a3b8", "#94a3b8"],
+          unit: "L",
+        },
+      };
+    }
+  } catch {
+    // Not JSON or tool not chart-worthy
+  }
+  return null;
+}
 
 type ChatMessage = {
   role: "system" | "user" | "assistant" | "tool";
@@ -165,69 +388,102 @@ export async function POST(request: NextRequest) {
 
       try {
         // Build message history
+        const lastUserMessage = [...incomingMessages].reverse().find((m) => m.role === "user")?.content ?? "";
         const messages: ChatMessage[] = [
-          { role: "system", content: SYSTEM_PROMPT },
+          { role: "system", content: buildSystemPrompt(lastUserMessage) },
           ...incomingMessages.map((m) => ({
             role: m.role as "user" | "assistant",
             content: m.content,
           })),
         ];
 
-        // ReAct loop — max 5 tool-call rounds
+        // ReAct loop — max 5 tool-call rounds, true LLM streaming
         for (let round = 0; round < 5; round++) {
-          console.log(`[chat] round ${round}, calling model`);
+          console.log(`[chat] round ${round}, streaming model call`);
 
-          const response = await client.chatCompletion({
+          // Accumulate tool call deltas across stream chunks
+          const toolCallAcc: Record<number, { id: string; name: string; args: string }> = {};
+          let assistantContent = "";
+
+          const iter = client.chatCompletionStream({
             model: MODEL,
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             messages: messages as any,
             tools: TOOL_SPECS,
             tool_choice: "auto",
-            max_tokens: 1024,
+            max_tokens: 2048,
           });
 
-          const choice = response.choices[0];
-          const assistantMsg = choice.message;
+          for await (const chunk of iter) {
+            const choice = chunk.choices[0];
+            if (!choice) continue;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const delta = (choice as any).delta ?? {};
 
-          // No tool calls → stream the final answer
-          if (!assistantMsg.tool_calls || assistantMsg.tool_calls.length === 0) {
-            const text = assistantMsg.content ?? "";
-            // Stream token by token (word chunks for UX)
-            const words = text.split(" ");
-            for (let i = 0; i < words.length; i++) {
-              send({ type: "token", content: (i === 0 ? "" : " ") + words[i] });
+            // Stream text tokens directly to the client
+            // Strip Qwen's internal XML tags that sometimes leak into content
+            if (delta.content) {
+              const clean = delta.content.replace(/<\/?tool_(?:call|response)[^>]*>/gi, "");
+              if (clean) {
+                assistantContent += clean;
+                send({ type: "token", content: clean });
+              }
             }
-            break;
+
+            // Accumulate streaming tool call deltas
+            if (delta.tool_calls && Array.isArray(delta.tool_calls)) {
+              for (const tc of delta.tool_calls) {
+                const idx: number = tc.index ?? 0;
+                if (!toolCallAcc[idx]) {
+                  toolCallAcc[idx] = { id: tc.id ?? `call_${idx}`, name: "", args: "" };
+                }
+                if (tc.id) toolCallAcc[idx].id = tc.id;
+                if (tc.function?.name && !toolCallAcc[idx].name) {
+                  toolCallAcc[idx].name = tc.function.name;
+                  send({ type: "tool_start", tool: tc.function.name });
+                }
+                if (tc.function?.arguments) {
+                  toolCallAcc[idx].args += tc.function.arguments;
+                }
+              }
+            }
           }
 
-          // Has tool calls → execute each one
+          const toolCalls = Object.values(toolCallAcc).filter((tc) => tc.name);
+
+          // No tool calls → final answer was already streamed token by token
+          if (toolCalls.length === 0) break;
+
+          // Push assistant message with tool calls into history
           messages.push({
             role: "assistant",
-            content: assistantMsg.content ?? "",
-            tool_calls: assistantMsg.tool_calls.map((tc) => ({
+            content: assistantContent,
+            tool_calls: toolCalls.map((tc) => ({
               id: tc.id,
               type: "function" as const,
-              function: { name: tc.function.name, arguments: tc.function.arguments },
+              function: { name: tc.name, arguments: tc.args },
             })),
           });
 
-          for (const tc of assistantMsg.tool_calls) {
-            const toolName = tc.function.name;
-            send({ type: "tool_start", tool: toolName });
-
+          // Execute each tool call
+          for (const tc of toolCalls) {
             let args: Record<string, unknown> = {};
             try {
-              args = JSON.parse(tc.function.arguments);
+              args = JSON.parse(tc.args);
             } catch {
               args = {};
             }
 
-            const executor = toolMap[toolName];
+            const executor = toolMap[tc.name];
             const result = executor
               ? await executor(args)
-              : `Unknown tool: ${toolName}`;
+              : `Unknown tool: ${tc.name}`;
 
-            send({ type: "tool_end", tool: toolName });
+            // Emit chart event if this tool produces visualisable data
+            const chartEvent = buildChartEvent(tc.name, result);
+            if (chartEvent) send(chartEvent);
+
+            send({ type: "tool_end", tool: tc.name });
 
             messages.push({
               role: "tool",

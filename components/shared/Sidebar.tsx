@@ -10,6 +10,7 @@ import {
   Shield,
   LogOut,
   LogIn,
+  Award,
 } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
 import { cn } from "@/lib/utils";
@@ -21,6 +22,7 @@ const navItems = [
   { href: "/portfolio", label: "Portfolio", icon: Building2 },
   { href: "/valuate", label: "Valuate", icon: Calculator },
   { href: "/market", label: "Market", icon: TrendingUp },
+  { href: "/scores", label: "Scores", icon: Award },
   { href: "/marketplace", label: "Marketplace", icon: Store },
   { href: "/rera", label: "RERA Check", icon: Shield },
 ];

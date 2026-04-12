@@ -8,6 +8,7 @@ import {
   TrendingUp,
   Store,
   Shield,
+  Award,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -15,6 +16,7 @@ const navItems = [
   { href: "/portfolio", label: "Portfolio", icon: Building2 },
   { href: "/valuate", label: "Valuate", icon: Calculator },
   { href: "/market", label: "Market", icon: TrendingUp },
+  { href: "/scores", label: "Scores", icon: Award },
   { href: "/marketplace", label: "Listings", icon: Store },
   { href: "/rera", label: "RERA", icon: Shield },
 ];

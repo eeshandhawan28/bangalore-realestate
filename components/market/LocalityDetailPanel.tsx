@@ -58,7 +58,8 @@ export function LocalityDetailPanel({
   const yieldData = YIELDS[locality.name];
 
   // Build sparkline data for selected range
-  const rangeStart = sparkRange === "1Y" ? 8 : sparkRange === "3Y" ? 4 : 0;
+  // 13-point series: 1Y=Q4'24(10)→Q4'25(12), 3Y=Q4'22(6)→Q4'25(12), 5Y=Q4'19(0)→Q4'25(12)
+  const rangeStart = sparkRange === "1Y" ? 10 : sparkRange === "3Y" ? 6 : 0;
   const sparkData = historyValues
     ? historyValues.slice(rangeStart).map((v, i) => ({ p: PERIODS[rangeStart + i], v }))
     : null;
