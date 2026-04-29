@@ -1,96 +1,87 @@
-# PropIQ — Bangalore Real Estate Intelligence Platform
+# PropIQ — Real Estate PM & CRM Platform
 
-> AI-powered investment scoring, portfolio analytics, and market intelligence for Bangalore real estate.
+> AI-powered project management, CRM, and market intelligence for real estate developers.
 
-PropIQ combines a data-driven Investment Score engine, an AI Portfolio Copilot, real-time POI proximity scoring, and a live sentiment pipeline — all built for Bangalore's 51 core localities.
+PropIQ is a full-stack platform combining construction project management, sales pipeline CRM, market analytics, and an AI copilot — built for Bangalore's real estate market. Developers manage projects and deals; the AI agent answers questions, generates insights, and runs actions across all modules.
 
 ---
 
 ## Features
 
-### Investment Score (`/scores`)
+### CRM
+
+**Contacts (`/contacts`)**
+- Manage leads, clients, contractors, vendors, investors, and government contacts
+- Search, filter by type, view full contact detail sheet
+- WhatsApp field for India market; custom tags
+
+**Pipeline (`/pipeline`)**
+- Visual Kanban board with drag-and-drop deal cards (`@dnd-kit`)
+- Customisable stages with win probabilities and colour coding
+- Pipeline forecast: total value and weighted expected value in header
+- Log activities (notes, calls, meetings) per deal
+
+### Project Management
+
+**Projects (`/projects`)**
+- Track construction projects across 7 statuses: Pre-Dev → Planning → Procurement → Construction → Closeout → Completed → On Hold
+- Budget progress bar with overbudget alerts
+- Filter by status; quick metrics grid per project
+
+**Project Detail (`/projects/[id]`)**
+- 5-column task board (To Do / In Progress / Review / Blocked / Done)
+- Inline status updates per task; priority badges (Low / Medium / High / Urgent)
+- Overdue task highlighting; estimated hours tracking
+- Task completion progress bar + budget summary
+
+**My Tasks (`/tasks`)**
+- All tasks assigned to the current user, grouped by project
+- Smart due-date labels: Overdue / Due Today / Due Tomorrow
+- Filter by status, overdue count, and blocked count badges
+
+### Market Intelligence
+
+**Investment Score (`/scores`)**
 - Composite 0–100 investability score for 51 Bangalore localities
-- **5-component scoring model** (total = 100%):
-  - Price Momentum (20%) — 2Y CAGR from Q4 2023 → Q4 2025
+- **5-component model:**
+  - Price Momentum (20%) — 2Y CAGR Q4 2023 → Q4 2025
   - Rental Yield (20%) — net yield normalised 1–4%
-  - Sentiment Signal (25%) — LLM-analysed development sentiment + trend bonus
+  - Sentiment Signal (25%) — LLM-analysed development sentiment
   - Affordability (15%) — entry price vs city average (₹4,890/sqft)
-  - Infra Alpha (20%) — POI proximity scoring via live Geoapify data
+  - Infra Alpha (20%) — live POI proximity via Geoapify
 - Grades: **Strong Buy / Buy / Hold / Watch**
-- Per-locality breakdown sheet: radar chart, natural language narrative, key stats, score bar chart
-- **"What's Nearby" card** — real POI counts (schools, hospitals, malls, parks, offices within 3km), metro distance with colour coding, direct link to nearest Namma Metro station on Google Maps
-- Sortable leaderboard by any component
+- Per-locality breakdown: radar chart, key stats, natural language narrative
 
-### Portfolio Copilot (AI Chat)
-- Floating chat bubble powered by `Qwen/Qwen2.5-7B-Instruct` via HuggingFace Inference API
-- True token-by-token streaming (SSE)
-- **Intent-aware routing** — detects portfolio / market / deal queries and prepends focused system prompts
-- **5 agent tools:**
-  - `get_portfolio_health` — scores portfolio across diversification, yield, appreciation, liquidity (0–100 each)
-  - `get_sell_recommendation` — HOLD / CONSIDER SELLING per property based on gain %, yield, sentiment trend
-  - `get_locality_deep_dive` — full locality profile: price history, rental yield, sentiment, investment score
-  - `compare_localities` — side-by-side comparison of 2–3 localities with winner recommendation
-  - `evaluate_deal` — GOOD DEAL / FAIR / OVERPRICED verdict given locality + sqft + asking price
-- **Inline Recharts charts** — bar, line, and grouped bar charts rendered inside chat bubbles
-- **Multi-session conversation history** — localStorage persistence keyed by Supabase user ID, up to 20 sessions
-- Session management: new chat, history panel, rename, delete
-- Markdown rendering via `react-markdown`
-
-### Portfolio Dashboard (`/portfolio`)
-- Track all properties with automatic AI valuation on save
-- Summary bar: total value, total invested, overall return (₹ and %)
-- Property detail drawer with value-over-time chart and estimated rental yield
-- Supabase PostgreSQL backend
-
-### Market Analytics (`/market`)
+**Market Analytics (`/market`)**
 - City-level summary: avg ₹/sqft, median 2BHK, total transactions
-- Sortable locality rankings (51 localities), appreciation trends, rental yield table
+- Sortable locality rankings, appreciation trends, rental yield table
 - Affordability calculator, locality comparison tool
-- Static dataset of 51 localities — Q1 2022 → Q4 2025 price history
 
-### AI Valuation Engine (`/valuate`)
-- Public tool — no login required
-- Enter location, sqft, BHK, bathrooms, balconies
-- AI-estimated price, ±10% confidence range, price/sqft, locality comparison
-- Powered by 13,000+ Bangalore property transaction records
+**AI Valuation (`/valuate`)**
+- Public, no login required
+- AI-estimated price, ±10% confidence range, locality comparison
+- Powered by 13,000+ Bangalore transaction records
 
-### Marketplace (`/marketplace`)
-- Browse listings with AI fair value badges (FairPriceBadge — green/red)
-- Filter by type (sale/rent), BHK, sort by newest/price/best value
-- List properties from your portfolio via Copilot (`create_listing` tool)
+### AI Copilot
 
-### RERA Checker (`/rera`)
-- Fuzzy search across RERA-registered Karnataka projects
-- Verify developer, registration number, date, status, unit count
-- Links to official RERA Karnataka portal
+- Floating chat bubble with SSE token streaming
+- **Multi-agent supervisor** (LangGraph) routing to 4 specialist agents:
+  - **Market agent** — valuation, locality deep-dive, comparison, best locality finder
+  - **Portfolio agent** — health scoring, sell recommendations
+  - **CRM agent** — search/create contacts, manage deals, log activities, pipeline forecast
+  - **PM agent** — list/create projects and tasks, timeline, overdue alerts
+- **Intent-aware routing** — regex + LLM intent detection before agent dispatch
+- **Groq LLM** (`llama-3.3-70b-versatile`) — fast inference, tool calling
+- Inline Recharts charts rendered inside chat bubbles
+- Multi-session conversation history with rename/delete
 
----
+### Other
 
-## Data Infrastructure
+**Marketplace (`/marketplace`)** — Browse listings with AI fair-value badges
 
-| File | Contents |
-|------|----------|
-| `lib/data/market_stats.json` | 51 localities — avg ₹/sqft, BHK medians, listing counts |
-| `lib/data/locality_price_history.json` | Quarterly price index Q1 2022 → Q4 2025 (13 periods) |
-| `lib/data/locality_rental_yields.json` | Net yield, gross yield, 5Y/1Y appreciation, rental demand |
-| `lib/data/locality_sentiment.json` | LLM sentiment score (−0.15 to +0.15), trend, highlights |
-| `lib/data/locality_poi.json` | POI counts (schools/hospitals/malls/parks/offices), metro distance, nearest metro station name |
-| `lib/data/locality_coordinates.json` | Lat/lng for all 51 localities |
-| `lib/data/rera_projects.json` | RERA-registered Karnataka projects |
+**RERA Checker (`/rera`)** — Fuzzy search across RERA Karnataka registered projects
 
-### Live Data Pipelines (Supabase + Cron)
-
-**Sentiment Refresh** (`/api/cron/sentiment-refresh`)
-- Runs weekly via Vercel cron
-- Fetches latest development news per locality, runs LLM sentiment analysis via HuggingFace
-- Upserts to `locality_sentiment` Supabase table
-
-**POI Refresh** (`/api/cron/poi-refresh`)
-- Fetches live POI counts from **Geoapify Places API** for all 51 localities
-- Categories: schools, hospitals, shopping malls, parks, offices (3km radius)
-- Nearest metro station distance (10km search radius)
-- Falls back to seeded `locality_poi.json` if API key unavailable
-- Upserts to `locality_poi` Supabase table
+**Portfolio (`/portfolio`)** — Track owned properties with automatic AI valuation
 
 ---
 
@@ -99,12 +90,14 @@ PropIQ combines a data-driven Investment Score engine, an AI Portfolio Copilot, 
 | Layer | Technology |
 |-------|-----------|
 | Frontend | Next.js 14 (App Router), TypeScript |
-| Styling | Tailwind CSS, shadcn/ui, `@tailwindcss/typography` |
-| Charts | Recharts (radar, bar, line, grouped bar) |
-| Markdown | react-markdown |
-| Auth + DB | Supabase (PostgreSQL + Auth) |
-| AI / LLM | HuggingFace Inference API (`Qwen/Qwen2.5-7B-Instruct`) |
-| Agent Framework | LangChain `DynamicStructuredTool` + Zod schemas |
+| Styling | Tailwind CSS, shadcn/ui |
+| Charts | Recharts |
+| Drag & Drop | @dnd-kit/core + @dnd-kit/sortable |
+| Dates | date-fns |
+| Auth + DB | Supabase (PostgreSQL + Auth + RLS) |
+| Multi-tenancy | Organizations + org_members RLS policies |
+| AI / LLM | Groq (`llama-3.3-70b-versatile`) |
+| Agent Framework | LangGraph supervisor + LangChain tools + Zod schemas |
 | POI Data | Geoapify Places API |
 | Search | fuse.js (RERA fuzzy search) |
 | Themes | next-themes (dark/light mode) |
@@ -116,9 +109,8 @@ PropIQ combines a data-driven Investment Score engine, an AI Portfolio Copilot, 
 
 ### Prerequisites
 - Node.js 18+
-- npm
 - Supabase project
-- HuggingFace API key (free)
+- Groq API key (free — [console.groq.com](https://console.groq.com))
 - Geoapify API key (free tier — 3,000 req/day)
 
 ### Installation
@@ -137,17 +129,23 @@ Create `.env.local`:
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
-HUGGINGFACE_API_KEY=your_hf_key
+GROQ_API_KEY=your_groq_key
 GEOAPIFY_API_KEY=your_geoapify_key
 CRON_SECRET=your_cron_secret
 ```
 
 ### Supabase Setup
 
-Run in your Supabase SQL editor:
+Run all migration files in order from `supabase/migrations/`:
+
+1. `001_organizations.sql` — multi-tenancy, org_members, RLS
+2. `002_crm_tables.sql` — contacts, pipelines, pipeline_stages, deals, deal_activities
+3. `003_pm_tables.sql` — projects, tasks, task_comments, notifications
+4. `004_budget_documents.sql` — budget_categories, expenses, documents, templates, workflows
+
+Also run the base sentiment/POI tables:
 
 ```sql
--- Sentiment table
 create table locality_sentiment (
   locality_name text primary key,
   sentiment_score float not null default 0,
@@ -156,7 +154,6 @@ create table locality_sentiment (
   updated_at timestamptz not null default now()
 );
 
--- POI table
 create table locality_poi (
   locality_name    text primary key,
   schools          int not null default 0,
@@ -173,8 +170,29 @@ alter table locality_sentiment enable row level security;
 alter table locality_poi enable row level security;
 create policy "public read" on locality_sentiment for select using (true);
 create policy "public read" on locality_poi for select using (true);
-create policy "service role write" on locality_sentiment for all using (true) with check (true);
-create policy "service role write" on locality_poi for all using (true) with check (true);
+```
+
+**Fix for RLS recursion on org_members** (run after 001):
+
+```sql
+drop policy if exists "org_members_can_view_members" on org_members;
+drop policy if exists "org_owners_can_manage_members" on org_members;
+
+create policy "users_can_view_own_membership"
+  on org_members for select using (user_id = auth.uid());
+
+create or replace function is_org_owner_or_manager(org_id uuid)
+returns boolean language sql security definer stable as $$
+  select exists (
+    select 1 from org_members
+    where organization_id = org_id
+      and user_id = auth.uid()
+      and role in ('owner', 'manager')
+  );
+$$;
+
+create policy "org_owners_can_manage_members"
+  on org_members for all using (is_org_owner_or_manager(organization_id));
 ```
 
 ### Run
@@ -185,17 +203,13 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000)
 
-### Seed Live Data
+### Seed Demo Data
 
-```bash
-# Populate POI data (runs Geoapify for all 51 localities — ~2 min)
-curl -X POST http://localhost:3000/api/cron/poi-refresh \
-  -H "x-cron-secret: your_cron_secret"
-
-# Populate sentiment data
-curl -X POST http://localhost:3000/api/cron/sentiment-refresh \
-  -H "x-cron-secret: your_cron_secret"
-```
+Sign in, then visit `/seed` and click **Seed Demo Data**. This creates:
+- An organisation for your account
+- 8 contacts (leads, clients, contractors, vendors, investors, government)
+- A Sales Pipeline with 5 stages + 6 demo deals
+- 2 construction projects with 13 tasks assigned to you
 
 ---
 
@@ -204,34 +218,39 @@ curl -X POST http://localhost:3000/api/cron/sentiment-refresh \
 ```
 propiq/
 ├── app/
-│   ├── (auth)/                         # Login / signup (Supabase Auth)
+│   ├── (auth)/                         # Login / signup
 │   ├── (dashboard)/
-│   │   ├── portfolio/                  # Portfolio management
-│   │   ├── market/                     # Market analytics + comparison tools
-│   │   ├── marketplace/                # Browse + list properties
+│   │   ├── contacts/                   # Contact list + detail sheet + create modal
+│   │   ├── pipeline/                   # Kanban deal board (dnd-kit)
+│   │   ├── projects/                   # Project list + [id] task board
+│   │   ├── tasks/                      # My Tasks — assigned to current user
+│   │   ├── portfolio/                  # Property portfolio
+│   │   ├── market/                     # Market analytics
+│   │   ├── marketplace/                # Listing browser
 │   │   ├── rera/                       # RERA project checker
-│   │   └── scores/                     # Investment Score leaderboard + breakdown
+│   │   └── scores/                     # Investment Score leaderboard
 │   ├── api/
-│   │   ├── chat/route.ts               # Portfolio Copilot — SSE streaming + ReAct tool loop
+│   │   ├── chat/route.ts               # AI Copilot — SSE + LangGraph multi-agent
 │   │   └── cron/
 │   │       ├── sentiment-refresh/      # Weekly LLM sentiment pipeline
 │   │       └── poi-refresh/            # Geoapify POI data refresh
-│   └── valuate/                        # AI valuation (public, no login)
+│   ├── seed/                           # Demo data seeder
+│   └── valuate/                        # AI valuation (public)
 ├── components/
-│   ├── chat/
-│   │   ├── ChatBubble.tsx              # Multi-session chat UI with history panel
-│   │   └── ChatMessage.tsx             # Markdown + inline Recharts charts
-│   ├── portfolio/                      # PropertyCard, AddPropertyModal
-│   ├── valuation/                      # ValuationForm, ValuationResult
-│   ├── market/                         # LocalityRankingTable, AppreciationTrendsChart, etc.
-│   ├── marketplace/                    # ListingCard, ListingFilters, FairPriceBadge
-│   ├── rera/                           # ReraResultCard
-│   └── shared/                         # Sidebar, BottomNav, ThemeToggle
+│   ├── chat/                           # ChatBubble, ChatMessage
+│   ├── shared/                         # Sidebar, BottomNav, ThemeToggle
+│   └── ui/                             # shadcn/ui components
 └── lib/
-    ├── scores.ts                       # Investment Score engine (5-component composite)
+    ├── agents/
+    │   ├── supervisor.ts               # LangGraph multi-agent supervisor
+    │   ├── state.ts                    # Shared agent state
+    │   └── tools/                      # market, portfolio, crm, pm tool sets
+    ├── auth/
+    │   └── middleware.ts               # Org context resolver
+    ├── hooks/
+    │   └── useOrgContext.ts            # orgId + userId hook
+    ├── scores.ts                       # Investment Score engine
     ├── valuation.ts                    # AI valuation logic
-    ├── agent/
-    │   └── tools.ts                    # LangChain agent tools (12 total)
     └── data/                           # Static JSON datasets (51 localities)
 ```
 
@@ -239,11 +258,11 @@ propiq/
 
 ## Design System
 
-- **Primary:** Deep forest green `#1a5c3a` (trust + wealth)
+- **Primary:** Deep forest green `#1a5c3a`
 - **Surfaces:** Warm beige `#f7f6f2` / `#f9f8f5`
-- **Semantic:** Red = overpriced / Watch, Green = fair / Strong Buy, Amber = Hold
+- **Semantic:** Red = overdue/blocked/overpriced, Green = done/fair value, Amber = warning/hold
 - **Dark mode:** Full support via `next-themes`
-- **Navigation:** 240px sidebar (desktop) + bottom tab bar (mobile)
+- **Navigation:** 240px sidebar (desktop) + 5-item bottom tab bar (mobile)
 
 ---
 
@@ -253,19 +272,21 @@ propiq/
 - [x] AI valuation engine (13,000+ transaction records)
 - [x] Portfolio tracking with Supabase
 - [x] Market analytics — 51 localities, Q4 2025 data
-- [x] Marketplace with FairPriceBadge
+- [x] Marketplace with AI fair-value badges
 - [x] RERA checker with fuzzy search
-- [x] Investment Score — 5-component composite for 51 localities
-- [x] Geoapify POI integration — live infrastructure scoring
-- [x] Portfolio Copilot — streaming AI agent with 12 tools
+- [x] Investment Score — 5-component composite
+- [x] Geoapify POI integration
+- [x] AI Copilot — migrated to Groq, LangGraph multi-agent supervisor
 - [x] Multi-session conversation history
-- [x] Weekly sentiment pipeline (HuggingFace + Supabase)
-- [x] Live POI refresh cron (Geoapify Places API)
+- [x] CRM — Contacts + Pipeline Kanban with drag-and-drop
+- [x] PM — Projects + Task board + My Tasks
+- [x] Multi-tenancy (organizations + RLS)
 
 ### Next
-- [ ] Real listing inventory (Propstack API or partner feed)
-- [ ] Price alert notifications
-- [ ] Multi-city support (Mumbai, Pune, Hyderabad)
+- [ ] Phase 2: Speech/text-to-project templates (Whisper + LLM generation)
+- [ ] Phase 3: Hindi/Kannada language support (next-intl), budget tracking, document management
+- [ ] Phase 4: Tier enforcement (Free/Pro/Enterprise), RBAC, unified dashboard
+- [ ] Phase 5: Enterprise SSO, REST API, white-labelling
 
 ---
 

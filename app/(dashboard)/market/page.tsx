@@ -8,8 +8,16 @@ import { BudgetExplorer } from "@/components/market/BudgetExplorer";
 import { LocalityDetailPanel } from "@/components/market/LocalityDetailPanel";
 import { AppreciationTrendsChart } from "@/components/market/AppreciationTrendsChart";
 import { RentalYieldTable } from "@/components/market/RentalYieldTable";
+import { LocalityComparison } from "@/components/market/LocalityComparison";
+import { AffordabilityCalculator } from "@/components/market/AffordabilityCalculator";
 import { formatLakhs, formatPricePerSqft, formatNumber } from "@/lib/utils/format";
 import { TrendingUp, Building2, BarChart2, MapPin } from "lucide-react";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
 
 // Deduplicate localities by name (keep first occurrence)
 const uniqueLocalities = marketStats.localities.filter(
@@ -101,43 +109,75 @@ export default function MarketPage() {
         })}
       </div>
 
-      {/* Budget Explorer */}
-      <BudgetExplorer
-        localities={uniqueLocalities}
-        onFilterChange={setBudgetFilter}
-        onLocalityClick={handleBudgetLocalityClick}
-      />
+      {/* Tabbed content */}
+      <Tabs defaultValue="overview">
+        <TabsList className="mb-6">
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="compare">Compare</TabsTrigger>
+          <TabsTrigger value="affordability">Affordability</TabsTrigger>
+        </TabsList>
 
-      {/* Chart */}
-      <div className="bg-surface border border-border rounded-xl p-6 shadow-sm">
-        <PriceDistributionChart
-          localities={uniqueLocalities}
-          selectedLocality={selectedLocality}
-        />
-      </div>
+        {/* ── Overview ── */}
+        <TabsContent value="overview" className="space-y-8">
+          <BudgetExplorer
+            localities={uniqueLocalities}
+            onFilterChange={setBudgetFilter}
+            onLocalityClick={handleBudgetLocalityClick}
+          />
 
-      {/* Locality card grid */}
-      <div className="bg-surface border border-border rounded-xl p-6 shadow-sm">
-        <h2 className="font-display font-semibold text-foreground mb-4">
-          Browse Localities
-        </h2>
-        <LocalityCardGrid
-          localities={uniqueLocalities}
-          onSelectLocality={(l) => handleSelectLocality(l as LocalityData)}
-          selectedLocality={selectedLocality}
-          budgetFilter={budgetFilter}
-        />
-      </div>
+          <div className="bg-surface border border-border rounded-xl p-6 shadow-sm">
+            <PriceDistributionChart
+              localities={uniqueLocalities}
+              selectedLocality={selectedLocality}
+            />
+          </div>
 
-      {/* Appreciation Trends */}
-      <div className="bg-surface border border-border rounded-xl p-6 shadow-sm">
-        <AppreciationTrendsChart />
-      </div>
+          <div className="bg-surface border border-border rounded-xl p-6 shadow-sm">
+            <h2 className="font-display font-semibold text-foreground mb-4">
+              Browse Localities
+            </h2>
+            <LocalityCardGrid
+              localities={uniqueLocalities}
+              onSelectLocality={(l) => handleSelectLocality(l as LocalityData)}
+              selectedLocality={selectedLocality}
+              budgetFilter={budgetFilter}
+            />
+          </div>
 
-      {/* Rental Yields */}
-      <div className="bg-surface border border-border rounded-xl p-6 shadow-sm">
-        <RentalYieldTable />
-      </div>
+          <div className="bg-surface border border-border rounded-xl p-6 shadow-sm">
+            <AppreciationTrendsChart />
+          </div>
+
+          <div className="bg-surface border border-border rounded-xl p-6 shadow-sm">
+            <RentalYieldTable />
+          </div>
+        </TabsContent>
+
+        {/* ── Compare ── */}
+        <TabsContent value="compare">
+          <div className="bg-surface border border-border rounded-xl p-6 shadow-sm">
+            <div className="mb-4">
+              <h2 className="font-display font-semibold text-foreground">
+                Compare Localities
+              </h2>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Side-by-side investment analysis using price, yield, appreciation, and sentiment data
+              </p>
+            </div>
+            <LocalityComparison />
+          </div>
+        </TabsContent>
+
+        {/* ── Affordability ── */}
+        <TabsContent value="affordability">
+          <div className="bg-surface border border-border rounded-xl p-6 shadow-sm">
+            <AffordabilityCalculator
+              localities={uniqueLocalities}
+              onLocalityClick={(l) => handleSelectLocality(l as LocalityData)}
+            />
+          </div>
+        </TabsContent>
+      </Tabs>
 
       <LocalityDetailPanel
         locality={detailLocality}

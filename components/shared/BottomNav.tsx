@@ -3,22 +3,16 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  Building2,
-  Calculator,
-  TrendingUp,
-  Store,
-  Shield,
-  Award,
+  Users, KanbanSquare, FolderKanban, CheckSquare, TrendingUp,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { href: "/portfolio", label: "Portfolio", icon: Building2 },
-  { href: "/valuate", label: "Valuate", icon: Calculator },
-  { href: "/market", label: "Market", icon: TrendingUp },
-  { href: "/scores", label: "Scores", icon: Award },
-  { href: "/marketplace", label: "Listings", icon: Store },
-  { href: "/rera", label: "RERA", icon: Shield },
+  { href: "/contacts", label: "Contacts", icon: Users },
+  { href: "/pipeline", label: "Pipeline", icon: KanbanSquare },
+  { href: "/projects", label: "Projects", icon: FolderKanban },
+  { href: "/tasks",    label: "Tasks",    icon: CheckSquare },
+  { href: "/market",   label: "Market",   icon: TrendingUp },
 ];
 
 export function BottomNav() {
